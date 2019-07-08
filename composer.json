@@ -1,0 +1,20 @@
+{
+    "name": "aternos/thanos",
+    "description": "Simple library to detect and remove unused chunks from a Minecraft world.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Kurt Thiemann",
+            "email": "kurt@aternos.org"
+        }
+    ],
+    "require": {
+      "ext-zlib": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Aternos\\Thanos\\": "src/"
+        }
+    }
+}
