@@ -15,7 +15,7 @@ class Helper{
      * @param string $src
      * @param string $dst
      */
-    static function copy_directory(string $src, string $dst) : void
+    static function copyDirectory(string $src, string $dst) : void
     {
         $dir = opendir($src);
         mkdir($dst, 0777, true);
@@ -24,7 +24,7 @@ class Helper{
                 continue;
             }
             if(is_dir($src . '/' . $file)){
-                self::copy_directory($src . '/' . $file,$dst . '/' . $file);
+                self::copyDirectory($src . '/' . $file,$dst . '/' . $file);
             }else{
                 copy($src . '/' . $file,$dst . '/' . $file);
             }
@@ -37,7 +37,7 @@ class Helper{
      *
      * @param string $path
      */
-    static function remove_directory(string $path)
+    static function removeDirectory(string $path)
     {
         if (substr($path, -1) !== "/") {
             $path .= "/";
@@ -51,7 +51,7 @@ class Helper{
 
             $filePath = $path . $file;
             if (is_dir($filePath)) {
-                self::remove_directory($filePath);
+                self::removeDirectory($filePath);
             } else {
                 unlink($filePath);
             }

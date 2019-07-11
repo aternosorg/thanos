@@ -41,7 +41,7 @@ $thanos = new Thanos();
 $thanos->setMinInhabitedTime(0);
 $removedChunks = $thanos->snap($world);
 if($moveOutput){
-    Helper::remove_directory($input);
+    Helper::removeDirectory($input);
     rename($output, $input);
 }
 

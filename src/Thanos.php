@@ -41,7 +41,7 @@ class Thanos{
      */
     public function snap(WorldInterface $world) : int
     {
-        $world->copyFiles();
+        $world->copyOtherFiles();
         $removedChunks = 0;
         foreach ($world as $chunk){
             if($chunk->getInhabitedTime() <= $this->minInhabitedTime){

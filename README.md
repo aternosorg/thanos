@@ -30,7 +30,7 @@ A world object represents a Minecraft world with all its files.
 It allows iteration over all chunks and provides a function to copy all non-region files to the output directory.
 ```php
 $world = new Aternos\Thanos\World\AnvilWorld("/path/to/world/directory", "/path/to/output/directory");
-$world->copyFiles(); //copy non-region files
+$world->copyOtherFiles(); //copy non-region files
 
 foreach ($world as $chunk){
   echo $chunk->getInhabitedTime() . "\n"; //output inhabited time for each chunk
@@ -44,9 +44,9 @@ After iterating over all chunks of a region file, it will be automatically saved
 
 ``getDestination() : string`` Get world output directory
 
-``getFiles() : string[]`` Get all files, that are not region directories
+``getOtherFiles() : string[]`` Get all files, that are not region directories
 
-``copyFiles() : void`` Copy all files, that are not region directories, to the output directory
+``copyOtherFiles() : void`` Copy all files, that are not region directories, to the output directory
 
 ``static isWorld(string $path) : bool`` Check if `$path` is world directory
 

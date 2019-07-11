@@ -239,7 +239,7 @@ class AnvilRegionDirectory implements RegionDirectoryInterface
      *
      * @return string[]
      */
-    public function getFiles(): array
+    public function getOtherFiles(): array
     {
         return $this->otherFiles;
     }
@@ -248,12 +248,12 @@ class AnvilRegionDirectory implements RegionDirectoryInterface
      * Copy all other files to $dest
      *
      */
-    public function copyFiles(): void
+    public function copyOtherFiles(): void
     {
         @mkdir($this->dest);
         foreach ($this->otherFiles as $file){
             if(is_dir("$this->path/$file")){
-                Helper::copy_directory("$this->path/$file", "$this->dest/$file");
+                Helper::copyDirectory("$this->path/$file", "$this->dest/$file");
             }else{
                 copy("$this->path/$file", "$this->dest/$file");
             }

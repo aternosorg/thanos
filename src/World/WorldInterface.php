@@ -33,13 +33,13 @@ interface WorldInterface extends Iterator {
      *
      * @return string[]
      */
-    public function getFiles() : array;
+    public function getOtherFiles() : array;
 
     /**
      * Copy all other files to $dest
      *
      */
-    public function copyFiles() : void;
+    public function copyOtherFiles() : void;
 
     /**
      *

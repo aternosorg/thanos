@@ -39,13 +39,13 @@ interface RegionDirectoryInterface extends Iterator {
      *
      * @return string[]
      */
-    public function getFiles() : array;
+    public function getOtherFiles() : array;
 
     /**
      * Copy all other files to $dest
      *
      */
-    public function copyFiles() : void;
+    public function copyOtherFiles() : void;
 
     /**
      * Get all regions in this directory (this will read all region file headers and all chunk headers)
