@@ -9,68 +9,69 @@ namespace Aternos\Thanos\Chunk;
  *
  * @package Aternos\Thanos\Chunk
  */
-interface ChunkInterface{
+interface ChunkInterface
+{
 
     /**
      * Get offset of chunk data within the region file
      *
      * @return int
      */
-    public function getOffset() : int;
+    public function getOffset(): int;
 
     /**
      * Get length of chunk data
      *
      * @return int
      */
-    public function getLength() : int;
+    public function getLength(): int;
 
     /**
      * Get InhabitedTime
      *
      * @return int
      */
-    public function getInhabitedTime() : int;
+    public function getInhabitedTime(): int;
 
     /**
      * Get time of last chunk update
      *
      * @return int
      */
-    public function getLastUpdate() : int;
+    public function getLastUpdate(): int;
 
     /**
      * Set last modified time
      *
      * @param int $timestamp
      */
-    public function setTimestamp(int $timestamp) : void;
+    public function setTimestamp(int $timestamp): void;
 
     /**
      * Get last modified time
      *
      * @return int
      */
-    public function getTimestamp() : int;
+    public function getTimestamp(): int;
 
     /**
      * Get the raw chunk data
      *
      * @return string
      */
-    public function getData() : string;
+    public function getData(): string;
 
     /**
      * Remove this chunk
      *
      */
-    public function remove() : void;
+    public function remove(): void;
 
     /**
      * Check if this chunk is removed
      *
      * @return bool
      */
-    public function isRemoved() : bool;
+    public function isRemoved(): bool;
 
 }

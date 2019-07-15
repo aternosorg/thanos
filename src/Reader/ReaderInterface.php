@@ -7,7 +7,8 @@ namespace Aternos\Thanos\Reader;
  *
  * @package Aternos\Thanos\Reader
  */
-interface ReaderInterface{
+interface ReaderInterface
+{
 
     /**
      * Read $length bytes of data
@@ -15,33 +16,33 @@ interface ReaderInterface{
      * @param int $length
      * @return string
      */
-    public function read(int $length) : string;
+    public function read(int $length): string;
 
     /**
      * Set pointer position to $offset
      *
      * @param int $offset
      */
-    public function seek(int $offset) : void;
+    public function seek(int $offset): void;
 
     /**
      * Set pointer position to 0
      *
      */
-    public function rewind() : void;
+    public function rewind(): void;
 
     /**
      * Get current pointer position
      *
      * @return int
      */
-    public function tell() : int;
+    public function tell(): int;
 
     /**
      * Check if pointer reached end of file
      *
      * @return bool
      */
-    public function eof() : bool;
+    public function eof(): bool;
 
 }

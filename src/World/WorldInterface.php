@@ -12,34 +12,35 @@ use Aternos\Thanos\Chunk\ChunkInterface;
  *
  * @package Aternos\Thanos\World
  */
-interface WorldInterface extends Iterator {
+interface WorldInterface extends Iterator
+{
 
     /**
      * Get world directory path
      *
      * @return string
      */
-    public function getPath() : string;
+    public function getPath(): string;
 
     /**
      * Get destination
      *
      * @return string
      */
-    public function getDestination() : string;
+    public function getDestination(): string;
 
     /**
      * Get all files, that are not region directories
      *
      * @return string[]
      */
-    public function getOtherFiles() : array;
+    public function getOtherFiles(): array;
 
     /**
      * Copy all other files to $dest
      *
      */
-    public function copyOtherFiles() : void;
+    public function copyOtherFiles(): void;
 
     /**
      *
@@ -53,5 +54,5 @@ interface WorldInterface extends Iterator {
      * @param string $path
      * @return bool
      */
-    public static function isWorld(string $path) : bool;
+    public static function isWorld(string $path): bool;
 }

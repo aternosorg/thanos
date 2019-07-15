@@ -88,10 +88,10 @@ class AnvilChunk implements ChunkInterface
      * Read chunk header
      *
      */
-    protected function readHeader() : void
+    protected function readHeader(): void
     {
-        $this->length = unpack("N",fread($this->file, 4))['1'] + 4;
-        $this->compression = unpack("C",fread($this->file, 1))['1'];
+        $this->length = unpack("N", fread($this->file, 4))['1'] + 4;
+        $this->compression = unpack("C", fread($this->file, 1))['1'];
     }
 
     /**
@@ -122,7 +122,7 @@ class AnvilChunk implements ChunkInterface
      */
     public function getInhabitedTime(): int
     {
-        if(isset($this->inhabitedTime)){
+        if (isset($this->inhabitedTime)) {
             return $this->inhabitedTime;
         }
         $this->zlibReader->rewind();
@@ -144,27 +144,27 @@ class AnvilChunk implements ChunkInterface
         $startPointer = $this->zlibReader->tell();
         $strPointer = 0;
         $valuePos = -1;
-        while (!$this->zlibReader->eof() && $this->zlibReader->tell() < $startPointer + $limit){
+        while (!$this->zlibReader->eof() && $this->zlibReader->tell() < $startPointer + $limit) {
             $data = $this->zlibReader->read(512);
             $dataStart = $this->zlibReader->tell() - strlen($data);
             $pos = strpos($data, $str);
-            if($pos !== false){
+            if ($pos !== false) {
                 $valuePos = $dataStart + $pos + strlen($str);
                 break;
             }
-            for($i = 0;$i < strlen($data);$i++){
-                if($data[$i] === $str[$strPointer]){
+            for ($i = 0; $i < strlen($data); $i++) {
+                if ($data[$i] === $str[$strPointer]) {
                     $strPointer++;
-                    if($strPointer === strlen($str)){
+                    if ($strPointer === strlen($str)) {
                         $valuePos = $dataStart + $i;
                         break 2;
                     }
-                }else{
+                } else {
                     $strPointer = 0;
                 }
             }
         }
-        if($valuePos === -1){
+        if ($valuePos === -1) {
             return null;
         }
         $this->zlibReader->seek($valuePos);
@@ -188,7 +188,7 @@ class AnvilChunk implements ChunkInterface
      */
     public function getTimestamp(): int
     {
-        if($this->timestamp === null){
+        if ($this->timestamp === null) {
             $this->timestamp = time();
         }
         return $this->timestamp;
@@ -230,7 +230,7 @@ class AnvilChunk implements ChunkInterface
      */
     public function getLastUpdate(): int
     {
-        if(isset($this->lastUpdate)){
+        if (isset($this->lastUpdate)) {
             return $this->lastUpdate;
         }
         $this->zlibReader->rewind();

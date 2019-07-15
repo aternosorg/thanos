@@ -10,7 +10,8 @@ use Aternos\Thanos\World\WorldInterface;
  *
  * @package Aternos\Thanos
  */
-class Thanos{
+class Thanos
+{
 
     /**
      * @var int
@@ -39,12 +40,12 @@ class Thanos{
      * @param WorldInterface $world
      * @return int
      */
-    public function snap(WorldInterface $world) : int
+    public function snap(WorldInterface $world): int
     {
         $world->copyOtherFiles();
         $removedChunks = 0;
-        foreach ($world as $chunk){
-            if($chunk->getInhabitedTime() <= $this->minInhabitedTime){
+        foreach ($world as $chunk) {
+            if ($chunk->getInhabitedTime() <= $this->minInhabitedTime) {
                 $chunk->remove();
                 $removedChunks++;
             }

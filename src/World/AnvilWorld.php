@@ -79,28 +79,28 @@ class AnvilWorld implements WorldInterface
      *
      * @return string[]
      */
-    protected function findRegionDirectories() : array
+    protected function findRegionDirectories(): array
     {
         $this->regionDirectories = [];
-        foreach ($this->files as $file){
-            if($file === '.' || $file === '..'){
+        foreach ($this->files as $file) {
+            if ($file === '.' || $file === '..') {
                 continue;
             }
-            if(!is_dir("$this->path/$file")){
+            if (!is_dir("$this->path/$file")) {
                 $this->otherFiles[] = $file;
                 continue;
             }
-            if($file === 'region' && AnvilRegionDirectory::isRegionDirectory("$this->path/$file")){
+            if ($file === 'region' && AnvilRegionDirectory::isRegionDirectory("$this->path/$file")) {
                 $this->regionDirectories[] = new AnvilRegionDirectory("$this->path/$file", "$this->dest/$file");
                 continue;
             }
-            if(file_exists("$this->path/$file/region") &&
-                AnvilRegionDirectory::isRegionDirectory("$this->path/$file/region")){
+            if (file_exists("$this->path/$file/region") &&
+                AnvilRegionDirectory::isRegionDirectory("$this->path/$file/region")) {
                 $this->regionDirectories[] = new AnvilRegionDirectory("$this->path/$file/region",
                     "$this->dest/$file/region");
                 $other = scandir("$this->path/$file");
-                foreach ($other as $o){
-                    if(!in_array($o, ['.', '..', 'region'])){
+                foreach ($other as $o) {
+                    if (!in_array($o, ['.', '..', 'region'])) {
                         $this->otherFiles[] = "$file/$o";
                     }
                 }
@@ -150,22 +150,22 @@ class AnvilWorld implements WorldInterface
     public function copyOtherFiles(): void
     {
         @mkdir($this->dest);
-        foreach ($this->otherFiles as $file){
-            if(is_dir("$this->path/$file")){
+        foreach ($this->otherFiles as $file) {
+            if (is_dir("$this->path/$file")) {
                 Helper::copyDirectory("$this->path/$file", "$this->dest/$file");
-            }else{
+            } else {
                 $parts = explode('/', $file);
-                if(count($parts) > 1){
+                if (count($parts) > 1) {
                     array_pop($parts);
                     $dir = implode('/', $parts);
-                    if(!is_dir("$this->dest/$dir")){
+                    if (!is_dir("$this->dest/$dir")) {
                         mkdir("$this->dest/$dir", 0777, true);
                     }
                 }
                 copy("$this->path/$file", "$this->dest/$file");
             }
         }
-        foreach ($this->regionDirectories as $dir){
+        foreach ($this->regionDirectories as $dir) {
             $dir->copyOtherFiles();
         }
     }
@@ -188,7 +188,7 @@ class AnvilWorld implements WorldInterface
      */
     public function current()
     {
-        if(!isset($this->regionDirectories[$this->regionDirectoryPointer])){
+        if (!isset($this->regionDirectories[$this->regionDirectoryPointer])) {
             return null;
         }
         return ($this->regionDirectories[$this->regionDirectoryPointer]->valid() ?
@@ -204,12 +204,12 @@ class AnvilWorld implements WorldInterface
      */
     public function next()
     {
-        if(!isset($this->regionDirectories[$this->regionDirectoryPointer])){
+        if (!isset($this->regionDirectories[$this->regionDirectoryPointer])) {
             return;
         }
         $this->regionDirectories[$this->regionDirectoryPointer]->next();
         $this->chunkPointer++;
-        if(!$this->regionDirectories[$this->regionDirectoryPointer]->valid()){
+        if (!$this->regionDirectories[$this->regionDirectoryPointer]->valid()) {
             $this->regionDirectories[$this->regionDirectoryPointer]->saveAll();
             $this->regionDirectoryPointer++;
         }
@@ -247,7 +247,7 @@ class AnvilWorld implements WorldInterface
      */
     public function rewind()
     {
-        if(isset($this->regionDirectories[$this->regionDirectoryPointer])){
+        if (isset($this->regionDirectories[$this->regionDirectoryPointer])) {
             $this->regionDirectories[$this->regionDirectoryPointer]->saveAll();
         }
         $this->regionDirectoryPointer = 0;

@@ -11,35 +11,36 @@ use Countable;
  *
  * @package Aternos\Thanos\Region
  */
-interface RegionInterface extends Countable{
+interface RegionInterface extends Countable
+{
 
     /**
      * Get region file path
      *
      * @return string
      */
-    public function getPath() : string;
+    public function getPath(): string;
 
     /**
      * Get destination
      *
      * @return string
      */
-    public function getDestination() : string;
+    public function getDestination(): string;
 
     /**
      * Get all chunks of this region
      *
      * @return ChunkInterface[]
      */
-    public function getChunks() : array;
+    public function getChunks(): array;
 
     /**
      * Check if region contains any chunks
      *
      * @return bool
      */
-    public function isEmpty() : bool;
+    public function isEmpty(): bool;
 
     /**
      * Get chunk at position $x $z
@@ -48,12 +49,12 @@ interface RegionInterface extends Countable{
      * @param int $z
      * @return ChunkInterface
      */
-    public function getChunkAt(int $x, int $z) : ?ChunkInterface;
+    public function getChunkAt(int $x, int $z): ?ChunkInterface;
 
     /**
      * Save this region file
      *
      */
-    public function save() : void;
+    public function save(): void;
 
 }

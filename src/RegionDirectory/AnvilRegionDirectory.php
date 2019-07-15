@@ -68,17 +68,17 @@ class AnvilRegionDirectory implements RegionDirectoryInterface
         $this->files = scandir($path);
         $this->regionFiles = [];
         $this->otherFiles = [];
-        foreach ($this->files as $file){
-            if($file === '.' || $file === '..'){
+        foreach ($this->files as $file) {
+            if ($file === '.' || $file === '..') {
                 continue;
             }
-            if(substr($file,-4) === '.mca' && is_file("$path/$file")){
+            if (substr($file, -4) === '.mca' && is_file("$path/$file")) {
                 $this->regionFiles[] = $file;
                 continue;
             }
             $this->otherFiles[] = $file;
         }
-        if(count($this->regionFiles) > 0){
+        if (count($this->regionFiles) > 0) {
             $this->currentRegion = new AnvilRegion("$this->path/" . $this->regionFiles[0],
                 "$this->dest/" . $this->regionFiles[0]);
         }
@@ -112,7 +112,7 @@ class AnvilRegionDirectory implements RegionDirectoryInterface
     public function getRegions(): array
     {
         $regions = [];
-        foreach ($this->regionFiles as $regionFile){
+        foreach ($this->regionFiles as $regionFile) {
             $regions[] = new AnvilRegion("$this->path/$regionFile", "$this->dest/$regionFile");
         }
         return $regions;
@@ -124,12 +124,12 @@ class AnvilRegionDirectory implements RegionDirectoryInterface
      */
     protected function saveCurrentRegion(): void
     {
-        if(!$this->currentRegion){
+        if (!$this->currentRegion) {
             return;
         }
-        try{
+        try {
             $this->currentRegion->save();
-        }catch (Exception $e){
+        } catch (Exception $e) {
             copy($this->currentRegion->getPath(), $this->currentRegion->getDestination());
         }
     }
@@ -142,17 +142,17 @@ class AnvilRegionDirectory implements RegionDirectoryInterface
      */
     static function isRegionDirectory(string $path): bool
     {
-        if(!is_dir($path)){
+        if (!is_dir($path)) {
             return false;
         }
-        foreach (scandir($path) as $file){
-            if($file === '.' || $file === '..'){
+        foreach (scandir($path) as $file) {
+            if ($file === '.' || $file === '..') {
                 continue;
             }
-            if(!is_file("$path/$file")){
+            if (!is_file("$path/$file")) {
                 continue;
             }
-            if(substr($file, -4) === '.mca'){
+            if (substr($file, -4) === '.mca') {
                 return true;
             }
         }
@@ -167,7 +167,7 @@ class AnvilRegionDirectory implements RegionDirectoryInterface
      */
     public function current()
     {
-        if(!isset($this->currentRegion)){
+        if (!isset($this->currentRegion)) {
             return null;
         }
         return $this->currentRegion->getChunks()[$this->chunkPointer];
@@ -183,14 +183,14 @@ class AnvilRegionDirectory implements RegionDirectoryInterface
     public function next()
     {
         $this->iterationIndex++;
-        if(isset($this->currentRegion->getChunks()[$this->chunkPointer+1])){
+        if (isset($this->currentRegion->getChunks()[$this->chunkPointer + 1])) {
             $this->chunkPointer++;
             return;
         }
         $this->chunkPointer = 0;
         $this->saveCurrentRegion();
         $this->regionPointer++;
-        if($this->regionPointer >= count($this->regionFiles)){
+        if ($this->regionPointer >= count($this->regionFiles)) {
             return;
         }
         $this->currentRegion = new AnvilRegion("$this->path/" . $this->regionFiles[$this->regionPointer],
@@ -251,10 +251,10 @@ class AnvilRegionDirectory implements RegionDirectoryInterface
     public function copyOtherFiles(): void
     {
         @mkdir($this->dest);
-        foreach ($this->otherFiles as $file){
-            if(is_dir("$this->path/$file")){
+        foreach ($this->otherFiles as $file) {
+            if (is_dir("$this->path/$file")) {
                 Helper::copyDirectory("$this->path/$file", "$this->dest/$file");
-            }else{
+            } else {
                 copy("$this->path/$file", "$this->dest/$file");
             }
         }

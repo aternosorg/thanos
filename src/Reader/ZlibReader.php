@@ -81,7 +81,7 @@ class ZlibReader implements ReaderInterface
         $remaining = ($this->length !== -1 ? $this->offset + $this->length - $this->resourcePointer : $length);
         $readLength = max($length - (strlen($this->data) - $this->pointer), 0);
 
-        if($readLength > 0 && $remaining > 0){
+        if ($readLength > 0 && $remaining > 0) {
             fseek($this->resource, $this->resourcePointer);
             $this->data .= inflate_add($this->inflateContext, fread($this->resource,
                 min(max(512, $readLength), $remaining)));

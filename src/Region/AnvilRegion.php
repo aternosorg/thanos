@@ -64,16 +64,16 @@ class AnvilRegion implements RegionInterface
      * Read offset, size and timestamps of all chunks
      *
      */
-    protected function readChunkTable() : void
+    protected function readChunkTable(): void
     {
         fseek($this->file, 0);
-        $values = unpack('N1024', fread($this->file, 4*1024));
-        foreach ($values as $val){
+        $values = unpack('N1024', fread($this->file, 4 * 1024));
+        foreach ($values as $val) {
             $offset = ($val >> 8) * 4096;
             $size = ($val & 0xFF) * 4096;
-            if($offset === 0 && $size === 0){
+            if ($offset === 0 && $size === 0) {
                 $this->chunks[] = null;
-            }else{
+            } else {
                 $chunk = new AnvilChunk($this->file, ($val >> 8) * 4096);
                 $this->chunks[] = $chunk;
                 $this->existingChunks[] = $chunk;
@@ -81,10 +81,10 @@ class AnvilRegion implements RegionInterface
         }
 
         fseek($this->file, 4096);
-        $values = unpack('N1024', fread($this->file, 4*1024));
+        $values = unpack('N1024', fread($this->file, 4 * 1024));
         $i = 0;
-        foreach ($values as $val){
-            if($this->chunks[$i] !== null){
+        foreach ($values as $val) {
+            if ($this->chunks[$i] !== null) {
                 $this->chunks[$i]->setTimestamp($val);
             }
             $i++;
@@ -98,7 +98,7 @@ class AnvilRegion implements RegionInterface
      * @param int $z
      * @return AnvilChunk
      */
-    public function getChunkAt(int $x, int $z) : ?ChunkInterface
+    public function getChunkAt(int $x, int $z): ?ChunkInterface
     {
         return $this->chunks[($x % 32) + ($z % 32) * 32];
     }
@@ -108,18 +108,18 @@ class AnvilRegion implements RegionInterface
      *
      * @throws Exception
      */
-    public function save() : void
+    public function save(): void
     {
-        if(!$this->hasExistingChunks()){
+        if (!$this->hasExistingChunks()) {
             return;
         }
         $outputFile = fopen($this->dest, 'w');
         $chunkTable = [];
         $timestampTable = [];
-        fwrite($outputFile, str_pad('', 8*1024, pack('C',0)));
+        fwrite($outputFile, str_pad('', 8 * 1024, pack('C', 0)));
 
-        foreach ($this->chunks as $i => $chunk){
-            if($chunk === null || $chunk->isRemoved()){
+        foreach ($this->chunks as $i => $chunk) {
+            if ($chunk === null || $chunk->isRemoved()) {
                 $chunkTable[] = pack('N', 0);
                 $timestampTable[] = pack('N', 0);
                 continue;
@@ -134,8 +134,8 @@ class AnvilRegion implements RegionInterface
             $timestampTable[] = pack('N', $chunk->getTimestamp());
             fwrite($outputFile, pack('NC', $size - 4, $chunk->getCompression()));
             stream_copy_to_stream($this->file, $outputFile, $size - 5);
-            fwrite($outputFile, str_pad('', $padding, pack('C',0)));
-            if(ftell($outputFile) % 4096 !== 0){
+            fwrite($outputFile, str_pad('', $padding, pack('C', 0)));
+            if (ftell($outputFile) % 4096 !== 0) {
                 fclose($outputFile);
                 throw new Exception('Failed to save region file to ' . $this->dest);
             }
@@ -146,10 +146,10 @@ class AnvilRegion implements RegionInterface
         fclose($outputFile);
     }
 
-    protected function hasExistingChunks() : int
+    protected function hasExistingChunks(): int
     {
-        foreach ($this->chunks as $chunk){
-            if($chunk !== null && !$chunk->isRemoved()){
+        foreach ($this->chunks as $chunk) {
+            if ($chunk !== null && !$chunk->isRemoved()) {
                 return true;
             }
         }
