@@ -45,7 +45,8 @@ class Thanos
         $world->copyOtherFiles();
         $removedChunks = 0;
         foreach ($world as $chunk) {
-            if ($chunk->getInhabitedTime() <= $this->minInhabitedTime) {
+            $time = $chunk->getInhabitedTime();
+            if ($time <= $this->minInhabitedTime && $time != -1) {
                 $chunk->remove();
                 $removedChunks++;
             }

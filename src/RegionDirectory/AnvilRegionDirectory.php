@@ -250,7 +250,7 @@ class AnvilRegionDirectory implements RegionDirectoryInterface
      */
     public function copyOtherFiles(): void
     {
-        @mkdir($this->dest);
+        mkdir($this->dest, 0777, true);
         foreach ($this->otherFiles as $file) {
             if (is_dir("$this->path/$file")) {
                 Helper::copyDirectory("$this->path/$file", "$this->dest/$file");
