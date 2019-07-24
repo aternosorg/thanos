@@ -62,16 +62,16 @@ interface ChunkInterface
     public function getData(): string;
 
     /**
-     * Remove this chunk
+     * Save this chunk
      *
      */
-    public function remove(): void;
+    public function save(): void;
 
     /**
-     * Check if this chunk is removed
+     * Check if this chunk is saved
      *
      * @return bool
      */
-    public function isRemoved(): bool;
+    public function isSaved(): bool;
 
 }

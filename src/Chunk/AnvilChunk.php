@@ -63,7 +63,7 @@ class AnvilChunk implements ChunkInterface
     /**
      * @var bool
      */
-    protected $removed = false;
+    protected $saved = false;
 
     /**
      * AnvilChunk constructor.
@@ -205,22 +205,22 @@ class AnvilChunk implements ChunkInterface
     }
 
     /**
-     * Remove this chunk
+     * Save this chunk
      *
      */
-    public function remove(): void
+    public function save(): void
     {
-        $this->removed = true;
+        $this->saved = true;
     }
 
     /**
-     * Check if this chunk is removed
+     * Check if this chunk is saved
      *
      * @return bool
      */
-    public function isRemoved(): bool
+    public function isSaved(): bool
     {
-        return $this->removed;
+        return $this->saved;
     }
 
     /**

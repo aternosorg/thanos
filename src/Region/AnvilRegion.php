@@ -119,7 +119,7 @@ class AnvilRegion implements RegionInterface
         fwrite($outputFile, str_pad('', 8 * 1024, pack('C', 0)));
 
         foreach ($this->chunks as $i => $chunk) {
-            if ($chunk === null || $chunk->isRemoved()) {
+            if ($chunk === null || !$chunk->isSaved()) {
                 $chunkTable[] = pack('N', 0);
                 $timestampTable[] = pack('N', 0);
                 continue;
@@ -149,7 +149,7 @@ class AnvilRegion implements RegionInterface
     protected function hasExistingChunks(): int
     {
         foreach ($this->chunks as $chunk) {
-            if ($chunk !== null && !$chunk->isRemoved()) {
+            if ($chunk !== null && $chunk->isSaved()) {
                 return true;
             }
         }

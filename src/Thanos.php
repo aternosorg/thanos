@@ -46,8 +46,9 @@ class Thanos
         $removedChunks = 0;
         foreach ($world as $chunk) {
             $time = $chunk->getInhabitedTime();
-            if ($time <= $this->minInhabitedTime && $time != -1) {
-                $chunk->remove();
+            if ($time > $this->minInhabitedTime || $time === -1) {
+                $chunk->save();
+            } else {
                 $removedChunks++;
             }
         }

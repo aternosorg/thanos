@@ -56,11 +56,11 @@ A chunk object represents a Minecraft world chunk. Due to performance reasons,
 chunk data is not completely parsed but only used to find metadata that helps to determine whether a chunk is used.
 
 ```php
-if($chunk->getInhabitedTime() === 0){
-  $chunk->remove();
+if($chunk->getInhabitedTime() > 0){
+  $chunk->save();
 }
 ```
-If a chunk is marked as removed, it will not be written to the output directory.
+If a chunk is not marked as saved, it will not be written to the output directory.
 
 #### Methods
 
@@ -78,9 +78,9 @@ If a chunk is marked as removed, it will not be written to the output directory.
 
 ``getTimestamp() : int`` Get last modification time
 
-``remove() : void`` Mark chunk as removed
+``save() : void`` Mark chunk as saved
 
-``isRemoved() : bool`` Check whether this chunk is marked as removed
+``isSaved() : bool`` Check whether this chunk is marked as saved
 
 ### Thanos
 Thanos automatically finds unused chunks in a world and reduces them to atoms.
