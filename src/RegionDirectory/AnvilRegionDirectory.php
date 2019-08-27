@@ -188,13 +188,15 @@ class AnvilRegionDirectory implements RegionDirectoryInterface
             return;
         }
         $this->chunkPointer = 0;
-        $this->saveCurrentRegion();
-        $this->regionPointer++;
-        if ($this->regionPointer >= count($this->regionFiles)) {
-            return;
-        }
-        $this->currentRegion = new AnvilRegion("$this->path/" . $this->regionFiles[$this->regionPointer],
-            "$this->dest/" . $this->regionFiles[$this->regionPointer]);
+        do{
+            $this->saveCurrentRegion();
+            $this->regionPointer++;
+            if ($this->regionPointer >= count($this->regionFiles)) {
+                return;
+            }
+            $this->currentRegion = new AnvilRegion("$this->path/" . $this->regionFiles[$this->regionPointer],
+                "$this->dest/" . $this->regionFiles[$this->regionPointer]);
+        }while(count($this->currentRegion->getChunks()) === 0);
     }
 
     /**
