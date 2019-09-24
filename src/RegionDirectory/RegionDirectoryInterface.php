@@ -13,7 +13,6 @@ use Aternos\Thanos\Region\RegionInterface;
  */
 interface RegionDirectoryInterface extends Iterator
 {
-
     /**
      * Get directory path
      *
@@ -68,5 +67,4 @@ interface RegionDirectoryInterface extends Iterator
      * @return bool
      */
     static function isRegionDirectory(string $path): bool;
-
 }

@@ -18,16 +18,16 @@ $moveOutput = false;
 if (isset($argv[2])) {
     $output = $argv[2];
 } else {
-    $output = sys_get_temp_dir() . '/thanos-' . uniqid();
+    $output = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'thanos-' . uniqid();
     $moveOutput = true;
 }
 
 if (!is_dir($input) || count(scandir($input)) === 2) {
-    exit("World must be a directory and not empty\n");
+    exit('World must be a directory and not empty' . PHP_EOL);
 }
 
 if (file_exists($output) && count(scandir($output)) !== 2) {
-    exit("Output directory must be empty\n");
+    exit('Output directory must be empty' . PHP_EOL);
 }
 
 if (!file_exists($output)) {
@@ -45,4 +45,8 @@ if ($moveOutput) {
     rename($output, $input);
 }
 
-echo "Removed $removedChunks chunks in " . round(microtime(true) - $startTime, 2) . " seconds\n";
+echo sprintf('Removed %d chunks in %.2f seconds',
+    $removedChunks,
+    round(microtime(true) - $startTime, 2)
+);
+echo PHP_EOL;

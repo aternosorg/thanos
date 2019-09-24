@@ -15,6 +15,11 @@ use Aternos\Thanos\Region\AnvilRegion;
  */
 class AnvilRegionDirectory implements RegionDirectoryInterface
 {
+    private const CURRENT_DIRECTORY = '.';
+
+    private const PARENT_DIRECTORY = '..';
+
+    private const FILE_EXTENSION_MCA = '.mca';
 
     /**
      * @var string
@@ -69,18 +74,28 @@ class AnvilRegionDirectory implements RegionDirectoryInterface
         $this->regionFiles = [];
         $this->otherFiles = [];
         foreach ($this->files as $file) {
-            if ($file === '.' || $file === '..') {
+            if (
+                $file === self::CURRENT_DIRECTORY
+                || $file === self::PARENT_DIRECTORY
+            ) {
                 continue;
             }
-            if (substr($file, -4) === '.mca' && is_file("$path/$file")) {
+
+            if (
+                substr($file, -4) === self::FILE_EXTENSION_MCA
+                && is_file($path . DIRECTORY_SEPARATOR . $file)
+            ) {
                 $this->regionFiles[] = $file;
                 continue;
             }
+
             $this->otherFiles[] = $file;
         }
         if (count($this->regionFiles) > 0) {
-            $this->currentRegion = new AnvilRegion("$this->path/" . $this->regionFiles[0],
-                "$this->dest/" . $this->regionFiles[0]);
+            $this->currentRegion = new AnvilRegion(
+                $this->path . DIRECTORY_SEPARATOR . $this->regionFiles[0],
+                $this->dest . DIRECTORY_SEPARATOR . $this->regionFiles[0]
+            );
         }
     }
 
@@ -113,7 +128,10 @@ class AnvilRegionDirectory implements RegionDirectoryInterface
     {
         $regions = [];
         foreach ($this->regionFiles as $regionFile) {
-            $regions[] = new AnvilRegion("$this->path/$regionFile", "$this->dest/$regionFile");
+            $regions[] = new AnvilRegion(
+                $this->path . DIRECTORY_SEPARATOR . $regionFile,
+                $this->dest . DIRECTORY_SEPARATOR . $regionFile
+            );
         }
         return $regions;
     }
@@ -124,13 +142,15 @@ class AnvilRegionDirectory implements RegionDirectoryInterface
      */
     protected function saveCurrentRegion(): void
     {
-        if (!$this->currentRegion) {
-            return;
-        }
-        try {
-            $this->currentRegion->save();
-        } catch (Exception $e) {
-            copy($this->currentRegion->getPath(), $this->currentRegion->getDestination());
+        if ($this->currentRegion) {
+            try {
+                $this->currentRegion->save();
+            } catch (Exception $e) {
+                copy(
+                    $this->currentRegion->getPath(),
+                    $this->currentRegion->getDestination()
+                );
+            }
         }
     }
 
@@ -142,21 +162,23 @@ class AnvilRegionDirectory implements RegionDirectoryInterface
      */
     static function isRegionDirectory(string $path): bool
     {
-        if (!is_dir($path)) {
-            return false;
+        $isRegion = false;
+        if (is_dir($path)) {
+            foreach (scandir($path) as $file) {
+                if (
+                    $file !== self::CURRENT_DIRECTORY
+                    && $file !== self::PARENT_DIRECTORY
+                    && is_file($path . DIRECTORY_SEPARATOR . $file)
+                ) {
+                    if (substr($file, -4) === self::FILE_EXTENSION_MCA) {
+                        $isRegion = true;
+                        break;
+                    }
+                }
+            }
         }
-        foreach (scandir($path) as $file) {
-            if ($file === '.' || $file === '..') {
-                continue;
-            }
-            if (!is_file("$path/$file")) {
-                continue;
-            }
-            if (substr($file, -4) === '.mca') {
-                return true;
-            }
-        }
-        return false;
+
+        return $isRegion;
     }
 
     /**
@@ -167,10 +189,10 @@ class AnvilRegionDirectory implements RegionDirectoryInterface
      */
     public function current()
     {
-        if (!isset($this->currentRegion)) {
-            return null;
-        }
-        return $this->currentRegion->getChunks()[$this->chunkPointer];
+        return isset($this->currentRegion)
+            ? $this->currentRegion->getChunks()[$this->chunkPointer]
+            : null
+        ;
     }
 
     /**
@@ -185,18 +207,21 @@ class AnvilRegionDirectory implements RegionDirectoryInterface
         $this->iterationIndex++;
         if (isset($this->currentRegion->getChunks()[$this->chunkPointer + 1])) {
             $this->chunkPointer++;
-            return;
+        } else {
+            $this->chunkPointer = 0;
+            do {
+                $this->saveCurrentRegion();
+                $this->regionPointer++;
+                if ($this->regionPointer >= count($this->regionFiles)) {
+                    break;
+                }
+
+                $this->currentRegion = new AnvilRegion(
+                    $this->path . DIRECTORY_SEPARATOR . $this->regionFiles[$this->regionPointer],
+                    $this->dest . DIRECTORY_SEPARATOR . $this->regionFiles[$this->regionPointer]
+                );
+            } while (count($this->currentRegion->getChunks()) === 0);
         }
-        $this->chunkPointer = 0;
-        do{
-            $this->saveCurrentRegion();
-            $this->regionPointer++;
-            if ($this->regionPointer >= count($this->regionFiles)) {
-                return;
-            }
-            $this->currentRegion = new AnvilRegion("$this->path/" . $this->regionFiles[$this->regionPointer],
-                "$this->dest/" . $this->regionFiles[$this->regionPointer]);
-        }while(count($this->currentRegion->getChunks()) === 0);
     }
 
     /**
@@ -254,10 +279,16 @@ class AnvilRegionDirectory implements RegionDirectoryInterface
     {
         mkdir($this->dest, 0777, true);
         foreach ($this->otherFiles as $file) {
-            if (is_dir("$this->path/$file")) {
-                Helper::copyDirectory("$this->path/$file", "$this->dest/$file");
+            if (is_dir($this->path . DIRECTORY_SEPARATOR . $file)) {
+                Helper::copyDirectory(
+                    $this->path . DIRECTORY_SEPARATOR . $file,
+                    $this->dest . DIRECTORY_SEPARATOR . $file
+                );
             } else {
-                copy("$this->path/$file", "$this->dest/$file");
+                copy(
+                    $this->path . DIRECTORY_SEPARATOR . $file,
+                    $this->dest . DIRECTORY_SEPARATOR . $file
+                );
             }
         }
     }

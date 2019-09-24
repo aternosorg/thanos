@@ -14,7 +14,6 @@ use Aternos\Thanos\Chunk\ChunkInterface;
  */
 interface WorldInterface extends Iterator
 {
-
     /**
      * Get world directory path
      *

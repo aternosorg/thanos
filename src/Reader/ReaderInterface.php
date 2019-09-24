@@ -9,7 +9,6 @@ namespace Aternos\Thanos\Reader;
  */
 interface ReaderInterface
 {
-
     /**
      * Read $length bytes of data
      *
@@ -44,5 +43,4 @@ interface ReaderInterface
      * @return bool
      */
     public function eof(): bool;
-
 }

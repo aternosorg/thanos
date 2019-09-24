@@ -52,7 +52,7 @@ class Thanos
                 $removedChunks++;
             }
         }
+
         return $removedChunks;
     }
-
 }

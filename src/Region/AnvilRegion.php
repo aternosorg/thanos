@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Aternos\Thanos\Region;
-
 
 use Aternos\Thanos\Chunk\AnvilChunk;
 use Aternos\Thanos\Chunk\ChunkInterface;
@@ -100,23 +98,45 @@ class AnvilRegion implements RegionInterface
      */
     public function getChunkAt(int $x, int $z): ?ChunkInterface
     {
-        return $this->chunks[($x % 32) + ($z % 32) * 32];
+        $position = ($x % 32) + ($z % 32) * 32;
+
+        return $this->chunks[$position];
     }
 
     /**
      * Write region to $file
+     * If there are chunks
      *
      * @throws Exception
      */
     public function save(): void
     {
-        if (!$this->hasExistingChunks()) {
-            return;
+        if ($this->hasExistingChunks()) {
+            $this->writeToFile(
+                $this->getDestination()
+            );
         }
-        $outputFile = fopen($this->dest, 'w');
+    }
+
+    /**
+     * Write to file
+     *
+     * @param string $filename
+     * @throws Exception
+     */
+    protected function writeToFile(string $filename): void
+    {
+        $outputFile = fopen($filename, 'w');
         $chunkTable = [];
         $timestampTable = [];
-        fwrite($outputFile, str_pad('', 8 * 1024, pack('C', 0)));
+        fwrite(
+            $outputFile,
+            str_pad(
+                '',
+                8 * 1024,
+                pack('C', 0)
+            )
+        );
 
         foreach ($this->chunks as $i => $chunk) {
             if ($chunk === null || !$chunk->isSaved()) {
@@ -130,30 +150,56 @@ class AnvilRegion implements RegionInterface
             $size = $chunk->getLength();
             $padding = 4096 - ($size % 4096);
             $padding = ($padding === 4096 ? 0 : $padding);
-            $chunkTable[] = pack('N', ((int)($offset / 4096) << 8) | ((int)(($size + $padding) / 4096) & 0xFF));
+
+            $value = ((int)($offset / 4096) << 8) | ((int)(($size + $padding) / 4096) & 0xFF);
+            $chunkTable[] = pack('N', $value);
+
             $timestampTable[] = pack('N', $chunk->getTimestamp());
-            fwrite($outputFile, pack('NC', $size - 4, $chunk->getCompression()));
+
+            fwrite(
+                $outputFile,
+                pack(
+                    'NC',
+                    $size - 4,
+                    $chunk->getCompression()
+                )
+            );
             stream_copy_to_stream($this->file, $outputFile, $size - 5);
-            fwrite($outputFile, str_pad('', $padding, pack('C', 0)));
+
+            fwrite(
+                $outputFile,
+                str_pad(
+                    '',
+                    $padding,
+                    pack('C', 0)
+                )
+            );
+
             if (ftell($outputFile) % 4096 !== 0) {
                 fclose($outputFile);
-                throw new Exception('Failed to save region file to ' . $this->dest);
+                throw new Exception(
+                    sprintf('Failed to save region file to %s', $filename)
+                );
             }
         }
+
         fseek($outputFile, 0);
         fwrite($outputFile, implode('', $chunkTable));
         fwrite($outputFile, implode('', $timestampTable));
         fclose($outputFile);
     }
 
-    protected function hasExistingChunks(): int
+    protected function hasExistingChunks(): bool
     {
+        $has = false;
         foreach ($this->chunks as $chunk) {
             if ($chunk !== null && $chunk->isSaved()) {
-                return true;
+                $has = true;
+                break;
             }
         }
-        return false;
+
+        return $has;
     }
 
     /**
@@ -186,7 +232,9 @@ class AnvilRegion implements RegionInterface
      */
     public function isEmpty(): bool
     {
-        return (count(array_keys($this->chunks, null)) === 0);
+        $keys = array_keys($this->chunks, null);
+
+        return count($keys) === 0;
     }
 
     /**

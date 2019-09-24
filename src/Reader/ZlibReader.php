@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Aternos\Thanos\Reader;
 
 /**
@@ -11,7 +10,6 @@ namespace Aternos\Thanos\Reader;
  */
 class ZlibReader implements ReaderInterface
 {
-
     /**
      * @var int
      */
@@ -60,8 +58,12 @@ class ZlibReader implements ReaderInterface
      * @param int $offset
      * @param int $length
      */
-    public function __construct($resource, int $compression = ZLIB_ENCODING_RAW, int $offset = 0, int $length = -1)
-    {
+    public function __construct(
+        $resource,
+        int $compression = ZLIB_ENCODING_RAW,
+        int $offset = 0,
+        int $length = -1
+    ) {
         $this->offset = $offset;
         $this->resourcePointer = $offset;
         $this->length = $length;
@@ -78,18 +80,33 @@ class ZlibReader implements ReaderInterface
      */
     public function read(int $length): string
     {
-        $remaining = ($this->length !== -1 ? $this->offset + $this->length - $this->resourcePointer : $length);
-        $readLength = max($length - (strlen($this->data) - $this->pointer), 0);
+        $remaining = $this->length !== -1
+            ? $this->offset + $this->length - $this->resourcePointer
+            : $length
+        ;
+        $readLength = max(
+            $length - (strlen($this->data) - $this->pointer),
+            0
+        );
 
         if ($readLength > 0 && $remaining > 0) {
             fseek($this->resource, $this->resourcePointer);
-            $this->data .= inflate_add($this->inflateContext, fread($this->resource,
-                min(max(512, $readLength), $remaining)));
+            $this->data .= inflate_add(
+                $this->inflateContext,
+                fread(
+                    $this->resource,
+                    min(
+                        max(512, $readLength),
+                        $remaining
+                    )
+                )
+            );
             $this->resourcePointer = ftell($this->resource);
         }
 
         $data = substr($this->data, $this->pointer, $length);
         $this->pointer += strlen($data);
+
         return $data;
     }
 
@@ -114,8 +131,8 @@ class ZlibReader implements ReaderInterface
 
     public function eof(): bool
     {
-        return ($this->resourcePointer >= $this->offset + $this->length || feof($this->resource)) &&
-            $this->pointer >= strlen($this->data);
+        return ($this->resourcePointer >= $this->offset + $this->length || feof($this->resource))
+            && $this->pointer >= strlen($this->data);
     }
 
     /**

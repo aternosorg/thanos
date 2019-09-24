@@ -15,6 +15,19 @@ use Aternos\Thanos\RegionDirectory\AnvilRegionDirectory;
  */
 class AnvilWorld implements WorldInterface
 {
+    private const CURRENT_DIRECTORY = '.';
+
+    private const PARENT_DIRECTORY = '..';
+
+    private const FILE_REGION = 'region';
+
+    private const FILE_LEVEL_DATA = 'level.dat';
+
+    private const SKIP_FILES = [
+        self::CURRENT_DIRECTORY,
+        self::PARENT_DIRECTORY,
+        self::FILE_REGION,
+    ];
 
     /**
      * @var string
@@ -83,31 +96,50 @@ class AnvilWorld implements WorldInterface
     {
         $this->regionDirectories = [];
         foreach ($this->files as $file) {
-            if ($file === '.' || $file === '..') {
+            if (
+                $file === self::CURRENT_DIRECTORY
+                || $file === self::PARENT_DIRECTORY
+            ) {
                 continue;
             }
-            if (!is_dir("$this->path/$file")) {
+
+            if (!is_dir($this->path . DIRECTORY_SEPARATOR . $file)) {
                 $this->otherFiles[] = $file;
                 continue;
             }
-            if ($file === 'region' && AnvilRegionDirectory::isRegionDirectory("$this->path/$file")) {
-                $this->regionDirectories[] = new AnvilRegionDirectory("$this->path/$file", "$this->dest/$file");
+
+            if (
+                $file === self::FILE_REGION
+                && AnvilRegionDirectory::isRegionDirectory($this->path . DIRECTORY_SEPARATOR . $file)
+            ) {
+                $this->regionDirectories[] = new AnvilRegionDirectory(
+                    $this->path . DIRECTORY_SEPARATOR . $file,
+                    $this->dest . DIRECTORY_SEPARATOR . $file
+                );
                 continue;
             }
-            if (file_exists("$this->path/$file/region") &&
-                AnvilRegionDirectory::isRegionDirectory("$this->path/$file/region")) {
-                $this->regionDirectories[] = new AnvilRegionDirectory("$this->path/$file/region",
-                    "$this->dest/$file/region");
-                $other = scandir("$this->path/$file");
-                foreach ($other as $o) {
-                    if (!in_array($o, ['.', '..', 'region'])) {
-                        $this->otherFiles[] = "$file/$o";
+
+            $regionFilename = $this->path . DIRECTORY_SEPARATOR . $file . DIRECTORY_SEPARATOR . self::FILE_REGION;
+            if (
+                file_exists($regionFilename)
+                && AnvilRegionDirectory::isRegionDirectory($regionFilename)
+            ) {
+                $this->regionDirectories[] = new AnvilRegionDirectory(
+                    $regionFilename,
+                    $this->dest . DIRECTORY_SEPARATOR . $file . DIRECTORY_SEPARATOR . self::FILE_REGION
+                );
+
+                $others = scandir($this->path . DIRECTORY_SEPARATOR . $file);
+                foreach ($others as $other) {
+                    if (!in_array($other, self::SKIP_FILES)) {
+                        $this->otherFiles[] = $file . DIRECTORY_SEPARATOR . $other;
                     }
                 }
-                continue;
+            } else {
+                $this->otherFiles[] = $file;
             }
-            $this->otherFiles[] = $file;
         }
+
         return $this->regionDirectories;
     }
 
@@ -130,7 +162,8 @@ class AnvilWorld implements WorldInterface
     public static function isWorld(string $path): bool
     {
         $files = scandir($path);
-        return (in_array('level.dat', $files) && in_array('region', $files));
+        return in_array(self::FILE_LEVEL_DATA, $files)
+            && in_array(self::FILE_REGION, $files);
     }
 
     /**
@@ -204,14 +237,15 @@ class AnvilWorld implements WorldInterface
      */
     public function next()
     {
-        if (!isset($this->regionDirectories[$this->regionDirectoryPointer])) {
-            return;
-        }
-        $this->regionDirectories[$this->regionDirectoryPointer]->next();
-        $this->chunkPointer++;
-        if (!$this->regionDirectories[$this->regionDirectoryPointer]->valid()) {
-            $this->regionDirectories[$this->regionDirectoryPointer]->saveAll();
-            $this->regionDirectoryPointer++;
+        $regionDirectory = $this->regionDirectories[$this->regionDirectoryPointer] ?? null;
+
+        if ($regionDirectory !== null) {
+            $regionDirectory->next();
+            $this->chunkPointer++;
+            if (!$regionDirectory->valid()) {
+                $regionDirectory->saveAll();
+                $this->regionDirectoryPointer++;
+            }
         }
     }
 
@@ -235,8 +269,8 @@ class AnvilWorld implements WorldInterface
      */
     public function valid()
     {
-        return (isset($this->regionDirectories[$this->regionDirectoryPointer]) &&
-            $this->regionDirectories[$this->regionDirectoryPointer]->valid());
+        return isset($this->regionDirectories[$this->regionDirectoryPointer]) &&
+            $this->regionDirectories[$this->regionDirectoryPointer]->valid();
     }
 
     /**

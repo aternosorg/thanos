@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Aternos\Thanos\Chunk;
-
 
 use Aternos\Thanos\Reader\ZlibReader;
 
@@ -68,7 +66,7 @@ class AnvilChunk implements ChunkInterface
     /**
      * AnvilChunk constructor.
      *
-     * @param string $file
+     * @param resource $file
      * @param int $offset
      */
     public function __construct($file, int $offset)
@@ -79,9 +77,12 @@ class AnvilChunk implements ChunkInterface
         $this->dataOffset = $offset + 5;
 
         $this->readHeader();
-        $this->zlibReader = new ZlibReader($this->file,
+        $this->zlibReader = new ZlibReader(
+            $this->file,
             $this->compression === 1 ? ZLIB_ENCODING_GZIP : ZLIB_ENCODING_DEFLATE,
-            $this->dataOffset, $this->length - 5);
+            $this->dataOffset,
+            $this->length - 5
+        );
     }
 
     /**
@@ -90,8 +91,11 @@ class AnvilChunk implements ChunkInterface
      */
     protected function readHeader(): void
     {
-        $this->length = unpack("N", fread($this->file, 4))['1'] + 4;
-        $this->compression = unpack("C", fread($this->file, 1))['1'];
+        $rawValue = unpack('N', fread($this->file, 4));
+        $this->length = $rawValue['1'] + 4;
+
+        $rawValue = unpack('C', fread($this->file, 1));
+        $this->compression = $rawValue['1'];
     }
 
     /**
@@ -122,12 +126,12 @@ class AnvilChunk implements ChunkInterface
      */
     public function getInhabitedTime(): int
     {
-        if (isset($this->inhabitedTime)) {
-            return $this->inhabitedTime;
+        if ($this->inhabitedTime === null) {
+            $this->zlibReader->rewind();
+            $data = $this->readAfter(hex2bin('04000D') . 'InhabitedTime', 8);
+            $this->inhabitedTime = $data !== null ? unpack('J', $data)['1'] : -1;
         }
-        $this->zlibReader->rewind();
-        $data = $this->readAfter(hex2bin('04000D') . 'InhabitedTime', 8);
-        $this->inhabitedTime = $data !== null ? unpack('J', $data)['1'] : -1;
+
         return $this->inhabitedTime;
     }
 
@@ -139,12 +143,18 @@ class AnvilChunk implements ChunkInterface
      * @param int $limit
      * @return string|null
      */
-    protected function readAfter(string $str, int $length, int $limit = 8192): ?string
-    {
+    protected function readAfter(
+        string $str,
+        int $length,
+        int $limit = 8192
+    ): ?string {
         $startPointer = $this->zlibReader->tell();
         $strPointer = 0;
         $valuePos = -1;
-        while (!$this->zlibReader->eof() && $this->zlibReader->tell() < $startPointer + $limit) {
+        while (
+            !$this->zlibReader->eof()
+            && $this->zlibReader->tell() < $startPointer + $limit
+        ) {
             $data = $this->zlibReader->read(512);
             $dataStart = $this->zlibReader->tell() - strlen($data);
             $pos = strpos($data, $str);
@@ -191,6 +201,7 @@ class AnvilChunk implements ChunkInterface
         if ($this->timestamp === null) {
             $this->timestamp = time();
         }
+
         return $this->timestamp;
     }
 
@@ -230,12 +241,12 @@ class AnvilChunk implements ChunkInterface
      */
     public function getLastUpdate(): int
     {
-        if (isset($this->lastUpdate)) {
-            return $this->lastUpdate;
+        if ($this->lastUpdate === null) {
+            $this->zlibReader->rewind();
+            $data = $this->readAfter(hex2bin('04000A') . 'LastUpdate', 8);
+            $this->lastUpdate = $data !== null ? unpack('J', $data)['1'] : -1;
         }
-        $this->zlibReader->rewind();
-        $data = $this->readAfter(hex2bin('04000A') . 'LastUpdate', 8);
-        $this->lastUpdate = $data !== null ? unpack('J', $data)['1'] : -1;
+
         return $this->lastUpdate;
     }
 
@@ -247,6 +258,7 @@ class AnvilChunk implements ChunkInterface
     public function getData(): string
     {
         fseek($this->file, $this->offset);
+
         return fread($this->file, $this->length);
     }
 }
