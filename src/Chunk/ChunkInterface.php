@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Aternos\Thanos\Chunk;
 
 /**
@@ -11,7 +10,6 @@ namespace Aternos\Thanos\Chunk;
  */
 interface ChunkInterface
 {
-
     /**
      * Get offset of chunk data within the region file
      *
@@ -73,5 +71,4 @@ interface ChunkInterface
      * @return bool
      */
     public function isSaved(): bool;
-
 }

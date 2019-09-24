@@ -13,7 +13,6 @@ use Countable;
  */
 interface RegionInterface extends Countable
 {
-
     /**
      * Get region file path
      *
@@ -56,5 +55,4 @@ interface RegionInterface extends Countable
      *
      */
     public function save(): void;
-
 }

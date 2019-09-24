@@ -9,6 +9,9 @@ namespace Aternos\Thanos;
  */
 class Helper
 {
+    private const CURRENT_DIRECTORY = '.';
+
+    private const PARENT_DIRECTORY = '..';
 
     /**
      * Copy directory recursive
@@ -16,18 +19,30 @@ class Helper
      * @param string $src
      * @param string $dst
      */
-    static function copyDirectory(string $src, string $dst): void
-    {
+    static function copyDirectory(
+        string $src,
+        string $dst
+    ): void {
         $dir = opendir($src);
         mkdir($dst, 0777, true);
         while (($file = readdir($dir)) !== false) {
-            if ($file === '.' || $file === '..') {
+            if (
+                $file === self::CURRENT_DIRECTORY
+                || $file === self::PARENT_DIRECTORY
+            ) {
                 continue;
             }
-            if (is_dir($src . '/' . $file)) {
-                self::copyDirectory($src . '/' . $file, $dst . '/' . $file);
+
+            if (is_dir($src . DIRECTORY_SEPARATOR . $file)) {
+                self::copyDirectory(
+                    $src . DIRECTORY_SEPARATOR . $file,
+                    $dst . DIRECTORY_SEPARATOR . $file
+                );
             } else {
-                copy($src . '/' . $file, $dst . '/' . $file);
+                copy(
+                    $src . DIRECTORY_SEPARATOR . $file,
+                    $dst . DIRECTORY_SEPARATOR . $file
+                );
             }
         }
         closedir($dir);
@@ -40,13 +55,13 @@ class Helper
      */
     static function removeDirectory(string $path)
     {
-        if (substr($path, -1) !== "/") {
-            $path .= "/";
+        if (substr($path, -1) !== DIRECTORY_SEPARATOR) {
+            $path .= DIRECTORY_SEPARATOR;
         }
 
         $directory = dir($path);
         while ($file = $directory->read()) {
-            if (in_array($file, [".", ".."])) {
+            if (in_array($file, [self::CURRENT_DIRECTORY, self::PARENT_DIRECTORY])) {
                 continue;
             }
 
