@@ -85,7 +85,9 @@ class AnvilRegionDirectory implements RegionDirectoryInterface
                 substr($file, -4) === self::FILE_EXTENSION_MCA
                 && is_file($path . DIRECTORY_SEPARATOR . $file)
             ) {
-                $this->regionFiles[] = $file;
+                if(filesize($path . DIRECTORY_SEPARATOR . $file) >= 4096){
+                    $this->regionFiles[] = $file;
+                }
                 continue;
             }
 
