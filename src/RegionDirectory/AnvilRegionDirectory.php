@@ -75,14 +75,14 @@ class AnvilRegionDirectory implements RegionDirectoryInterface
         $this->otherFiles = [];
         foreach ($this->files as $file) {
             if (
-                $file === self::CURRENT_DIRECTORY
-                || $file === self::PARENT_DIRECTORY
+                $file === static::CURRENT_DIRECTORY
+                || $file === static::PARENT_DIRECTORY
             ) {
                 continue;
             }
 
             if (
-                substr($file, -4) === self::FILE_EXTENSION_MCA
+                substr($file, -4) === static::FILE_EXTENSION_MCA
                 && is_file($path . DIRECTORY_SEPARATOR . $file)
             ) {
                 if(filesize($path . DIRECTORY_SEPARATOR . $file) >= 4096){
@@ -168,11 +168,11 @@ class AnvilRegionDirectory implements RegionDirectoryInterface
         if (is_dir($path)) {
             foreach (scandir($path) as $file) {
                 if (
-                    $file !== self::CURRENT_DIRECTORY
-                    && $file !== self::PARENT_DIRECTORY
+                    $file !== static::CURRENT_DIRECTORY
+                    && $file !== static::PARENT_DIRECTORY
                     && is_file($path . DIRECTORY_SEPARATOR . $file)
                 ) {
-                    if (substr($file, -4) === self::FILE_EXTENSION_MCA) {
+                    if (substr($file, -4) === static::FILE_EXTENSION_MCA) {
                         $isRegion = true;
                         break;
                     }

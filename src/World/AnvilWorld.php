@@ -101,8 +101,8 @@ class AnvilWorld implements WorldInterface
         $this->regionDirectories = [];
         foreach ($this->files as $file) {
             if (
-                $file === self::CURRENT_DIRECTORY
-                || $file === self::PARENT_DIRECTORY
+                $file === static::CURRENT_DIRECTORY
+                || $file === static::PARENT_DIRECTORY
             ) {
                 continue;
             }
@@ -113,7 +113,7 @@ class AnvilWorld implements WorldInterface
             }
 
             if (
-                $file === self::FILE_REGION
+                $file === static::FILE_REGION
                 && AnvilRegionDirectory::isRegionDirectory($this->path . DIRECTORY_SEPARATOR . $file)
             ) {
                 $this->regionDirectories[] = new AnvilRegionDirectory(
@@ -123,19 +123,19 @@ class AnvilWorld implements WorldInterface
                 continue;
             }
 
-            $regionFilename = $this->path . DIRECTORY_SEPARATOR . $file . DIRECTORY_SEPARATOR . self::FILE_REGION;
+            $regionFilename = $this->path . DIRECTORY_SEPARATOR . $file . DIRECTORY_SEPARATOR . static::FILE_REGION;
             if (
                 file_exists($regionFilename)
                 && AnvilRegionDirectory::isRegionDirectory($regionFilename)
             ) {
                 $this->regionDirectories[] = new AnvilRegionDirectory(
                     $regionFilename,
-                    $this->dest . DIRECTORY_SEPARATOR . $file . DIRECTORY_SEPARATOR . self::FILE_REGION
+                    $this->dest . DIRECTORY_SEPARATOR . $file . DIRECTORY_SEPARATOR . static::FILE_REGION
                 );
 
                 $others = scandir($this->path . DIRECTORY_SEPARATOR . $file);
                 foreach ($others as $other) {
-                    if (!in_array($other, self::SKIP_FILES)) {
+                    if (!in_array($other, static::SKIP_FILES)) {
                         $this->otherFiles[] = $file . DIRECTORY_SEPARATOR . $other;
                     }
                 }
@@ -166,8 +166,8 @@ class AnvilWorld implements WorldInterface
     public static function isWorld(string $path): bool
     {
         $files = scandir($path);
-        return in_array(self::FILE_LEVEL_DATA, $files)
-            && count(array_intersect([self::FILE_REGION, self::FILE_NETHER, self::FILE_THE_END], $files));
+        return in_array(static::FILE_LEVEL_DATA, $files)
+            && count(array_intersect([static::FILE_REGION, static::FILE_NETHER, static::FILE_THE_END], $files));
     }
 
     /**

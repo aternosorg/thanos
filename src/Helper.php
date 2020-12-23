@@ -27,14 +27,14 @@ class Helper
         mkdir($dst, 0777, true);
         while (($file = readdir($dir)) !== false) {
             if (
-                $file === self::CURRENT_DIRECTORY
-                || $file === self::PARENT_DIRECTORY
+                $file === static::CURRENT_DIRECTORY
+                || $file === static::PARENT_DIRECTORY
             ) {
                 continue;
             }
 
             if (is_dir($src . DIRECTORY_SEPARATOR . $file)) {
-                self::copyDirectory(
+                static::copyDirectory(
                     $src . DIRECTORY_SEPARATOR . $file,
                     $dst . DIRECTORY_SEPARATOR . $file
                 );
@@ -61,13 +61,13 @@ class Helper
 
         $directory = dir($path);
         while ($file = $directory->read()) {
-            if (in_array($file, [self::CURRENT_DIRECTORY, self::PARENT_DIRECTORY])) {
+            if (in_array($file, [static::CURRENT_DIRECTORY, static::PARENT_DIRECTORY])) {
                 continue;
             }
 
             $filePath = $path . $file;
             if (is_dir($filePath)) {
-                self::removeDirectory($filePath);
+                static::removeDirectory($filePath);
             } else {
                 unlink($filePath);
             }
