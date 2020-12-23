@@ -21,6 +21,10 @@ class AnvilWorld implements WorldInterface
 
     private const FILE_REGION = 'region';
 
+    private const FILE_THE_END = 'DIM1';
+
+    private const FILE_NETHER = 'DIM-1';
+
     private const FILE_LEVEL_DATA = 'level.dat';
 
     private const SKIP_FILES = [
@@ -163,7 +167,7 @@ class AnvilWorld implements WorldInterface
     {
         $files = scandir($path);
         return in_array(self::FILE_LEVEL_DATA, $files)
-            && in_array(self::FILE_REGION, $files);
+            && count(array_intersect([self::FILE_REGION, self::FILE_NETHER, self::FILE_THE_END], $files));
     }
 
     /**
