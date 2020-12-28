@@ -107,13 +107,15 @@ class AnvilRegion implements RegionInterface
      * Write region to $file
      * If there are chunks
      *
+     * @param bool $verify
      * @throws Exception
      */
-    public function save(): void
+    public function save(bool $verify = true): void
     {
         if ($this->hasExistingChunks()) {
             $this->writeToFile(
-                $this->getDestination()
+                $this->getDestination(),
+                $verify
             );
         }
     }
@@ -122,14 +124,21 @@ class AnvilRegion implements RegionInterface
      * Write to file
      *
      * @param string $filename
+     * @param bool $verify
      * @throws Exception
      */
-    protected function writeToFile(string $filename): void
+    protected function writeToFile(string $filename, bool $verify): void
     {
-        $outputFile = fopen($filename, 'w');
+        $outputFile = fopen($filename, $verify ? 'w+' : 'w');
+        if($outputFile === false){
+            throw new Exception(
+                sprintf('Failed to open region output file %s', $filename)
+            );
+        }
         $chunkTable = [];
         $timestampTable = [];
-        fwrite(
+
+        $writtenBytes = fwrite(
             $outputFile,
             str_pad(
                 '',
@@ -137,6 +146,11 @@ class AnvilRegion implements RegionInterface
                 pack('C', 0)
             )
         );
+        if($writtenBytes !== 8 * 1024){
+            throw new Exception(
+                sprintf('Failed to write to region output file %s', $filename)
+            );
+        }
 
         foreach ($this->chunks as $i => $chunk) {
             if ($chunk === null || !$chunk->isSaved()) {
@@ -145,8 +159,15 @@ class AnvilRegion implements RegionInterface
                 continue;
             }
 
-            fseek($this->file, $chunk->getOffset() + 5);
+            if(fseek($this->file, $chunk->getOffset() + 5) !== 0){
+                throw new Exception("Failed to read region file: fseek failed");
+            }
+
             $offset = ftell($outputFile);
+            if($offset === false || $offset % 4096 !== 0){
+                throw new Exception("Invalid offset in region file");
+            }
+
             $size = $chunk->getLength();
             $padding = 4096 - ($size % 4096);
             $padding = ($padding === 4096 ? 0 : $padding);
@@ -156,7 +177,7 @@ class AnvilRegion implements RegionInterface
 
             $timestampTable[] = pack('N', $chunk->getTimestamp());
 
-            fwrite(
+            $writtenBytes = fwrite(
                 $outputFile,
                 pack(
                     'NC',
@@ -164,7 +185,43 @@ class AnvilRegion implements RegionInterface
                     $chunk->getCompression()
                 )
             );
-            stream_copy_to_stream($this->file, $outputFile, $size - 5);
+            if($writtenBytes !== 5){
+                throw new Exception(
+                    sprintf('Failed to save region file to %s: chunk header write failed', $filename)
+                );
+            }
+
+            $copyLength = $size - 5;
+            if($verify){
+                $data = fread($this->file, $copyLength);
+                if($data === false || strlen($data) !== $copyLength){
+                    throw new Exception(
+                        sprintf('Failed to save region file to %s: chunk read failed', $filename)
+                    );
+                }
+                if(fwrite($outputFile, $data, $copyLength) !== $copyLength){
+                    throw new Exception(
+                        sprintf('Failed to save region file to %s: chunk write failed', $filename)
+                    );
+                }
+                if(fseek($outputFile, -$copyLength, SEEK_CUR) !== 0){
+                    throw new Exception(
+                        sprintf('Failed to save region file to %s: fseek failed', $filename)
+                    );
+                }
+                $checkData = fread($outputFile, $copyLength);
+                if($checkData === false || crc32($data) !== crc32($checkData)){
+                    throw new Exception(
+                        sprintf('Failed to save region file to %s: chunk checksum failed', $filename)
+                    );
+                }
+            }else{
+                if(stream_copy_to_stream($this->file, $outputFile, $copyLength) !== $copyLength){
+                    throw new Exception(
+                        sprintf('Failed to save region file to %s: failed to copy chunk', $filename)
+                    );
+                }
+            }
 
             fwrite(
                 $outputFile,
@@ -175,18 +232,38 @@ class AnvilRegion implements RegionInterface
                 )
             );
 
-            if (ftell($outputFile) % 4096 !== 0) {
-                fclose($outputFile);
+            $endOffset = ftell($outputFile);
+            if ($endOffset === false || $endOffset % 4096 !== 0) {
                 throw new Exception(
                     sprintf('Failed to save region file to %s', $filename)
                 );
             }
         }
 
-        fseek($outputFile, 0);
-        fwrite($outputFile, implode('', $chunkTable));
-        fwrite($outputFile, implode('', $timestampTable));
-        fclose($outputFile);
+        if(fseek($outputFile, 0) !== 0){
+            throw new Exception(
+                sprintf('Failed to save region file to %s: fseek failed', $filename)
+            );
+        }
+
+        $chunkTableStr = implode('', $chunkTable);
+        if(fwrite($outputFile, $chunkTableStr, strlen($chunkTableStr)) !== strlen($chunkTableStr)){
+            throw new Exception(
+                sprintf('Failed to save region file to %s: failed to write chunk table', $filename)
+            );
+        }
+        $timestampTableStr = implode('', $timestampTable);
+        if(fwrite($outputFile, $timestampTableStr, strlen($timestampTableStr)) !== strlen($timestampTableStr)){
+            throw new Exception(
+                sprintf('Failed to save region file to %s: failed to write timestamp table', $filename)
+            );
+        }
+        
+        if(!fclose($outputFile)){
+            throw new Exception(
+                sprintf('Failed to save region file to %s: failed to close file', $filename)
+            );
+        }
     }
 
     protected function hasExistingChunks(): bool

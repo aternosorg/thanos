@@ -52,7 +52,7 @@ interface RegionInterface extends Countable
 
     /**
      * Save this region file
-     *
+     * @param bool $verify
      */
-    public function save(): void;
+    public function save(bool $verify = true): void;
 }
