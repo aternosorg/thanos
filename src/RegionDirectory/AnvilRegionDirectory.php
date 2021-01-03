@@ -81,6 +81,10 @@ class AnvilRegionDirectory implements RegionDirectoryInterface
                 continue;
             }
 
+            if(is_link($path . DIRECTORY_SEPARATOR . $file)){
+                continue;
+            }
+
             if (
                 substr($file, -4) === static::FILE_EXTENSION_MCA
                 && is_file($path . DIRECTORY_SEPARATOR . $file)
@@ -281,6 +285,9 @@ class AnvilRegionDirectory implements RegionDirectoryInterface
     {
         mkdir($this->dest, 0777, true);
         foreach ($this->otherFiles as $file) {
+            if(is_link($this->path . DIRECTORY_SEPARATOR . $file)){
+                continue;
+            }
             if (is_dir($this->path . DIRECTORY_SEPARATOR . $file)) {
                 Helper::copyDirectory(
                     $this->path . DIRECTORY_SEPARATOR . $file,

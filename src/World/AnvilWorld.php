@@ -107,6 +107,10 @@ class AnvilWorld implements WorldInterface
                 continue;
             }
 
+            if(is_link($this->path . DIRECTORY_SEPARATOR . $file)){
+                continue;
+            }
+
             if (!is_dir($this->path . DIRECTORY_SEPARATOR . $file)) {
                 $this->otherFiles[] = $file;
                 continue;
@@ -188,6 +192,9 @@ class AnvilWorld implements WorldInterface
     {
         @mkdir($this->dest);
         foreach ($this->otherFiles as $file) {
+            if(is_link("$this->path/$file")){
+                continue;
+            }
             if (is_dir("$this->path/$file")) {
                 Helper::copyDirectory("$this->path/$file", "$this->dest/$file");
             } else {

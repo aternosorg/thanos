@@ -258,7 +258,7 @@ class AnvilRegion implements RegionInterface
                 sprintf('Failed to save region file to %s: failed to write timestamp table', $filename)
             );
         }
-        
+
         if(!fclose($outputFile)){
             throw new Exception(
                 sprintf('Failed to save region file to %s: failed to close file', $filename)
