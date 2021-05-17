@@ -2,6 +2,8 @@
 
 namespace Aternos\Thanos\Reader;
 
+use Exception;
+
 /**
  * Class ZlibReader
  * Read zlib compressed data from a resource
@@ -77,6 +79,7 @@ class ZlibReader implements ReaderInterface
      *
      * @param int $length
      * @return string
+     * @throws Exception
      */
     public function read(int $length): string
     {
@@ -90,17 +93,26 @@ class ZlibReader implements ReaderInterface
         );
 
         if ($readLength > 0 && $remaining > 0) {
-            fseek($this->resource, $this->resourcePointer);
-            $this->data .= inflate_add(
-                $this->inflateContext,
-                fread(
-                    $this->resource,
-                    min(
-                        max(512, $readLength),
-                        $remaining
-                    )
+            $rawData = fread(
+                $this->resource,
+                min(
+                    max(512, $readLength),
+                    $remaining
                 )
             );
+            if($rawData === false) {
+                throw new Exception("Failed to read compressed input data.");
+            }
+
+            fseek($this->resource, $this->resourcePointer);
+            $uncompressedData = inflate_add(
+                $this->inflateContext,
+                $rawData
+            );
+            if($uncompressedData === false) {
+                throw new Exception("Failed to inflate input data.");
+            }
+            $this->data .= $uncompressedData;
             $this->resourcePointer = ftell($this->resource);
         }
 
