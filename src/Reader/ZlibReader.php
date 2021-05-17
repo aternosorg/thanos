@@ -93,6 +93,7 @@ class ZlibReader implements ReaderInterface
         );
 
         if ($readLength > 0 && $remaining > 0) {
+            fseek($this->resource, $this->resourcePointer);
             $rawData = fread(
                 $this->resource,
                 min(
@@ -104,7 +105,6 @@ class ZlibReader implements ReaderInterface
                 throw new Exception("Failed to read compressed input data.");
             }
 
-            fseek($this->resource, $this->resourcePointer);
             $uncompressedData = inflate_add(
                 $this->inflateContext,
                 $rawData
