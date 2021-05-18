@@ -224,7 +224,7 @@ class AnvilRegion implements RegionInterface
                         sprintf('Failed to save region file to %s: fseek failed', $filename)
                     );
                 }
-                $checkData = fread($outputFile, $copyLength);
+                $checkData = $copyLength !== 0 ? fread($outputFile, $copyLength) : "";
                 if($checkData === false || crc32($data) !== crc32($checkData)){
                     throw new Exception(
                         sprintf('Failed to save region file to %s: chunk checksum failed', $filename)
