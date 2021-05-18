@@ -61,11 +61,19 @@ class AnvilRegion implements RegionInterface
     /**
      * Read offset, size and timestamps of all chunks
      *
+     * @throws Exception
      */
     protected function readChunkTable(): void
     {
         fseek($this->file, 0);
-        $values = unpack('N1024', fread($this->file, 4 * 1024));
+        $rawData = fread($this->file, 4 * 1024);
+        if($rawData === false || strlen($rawData) !== 4 * 1024) {
+            throw new Exception("Failed to read chunk table in '" . $this->getPath() . "'.");
+        }
+        $values = unpack('N1024', $rawData);
+        if($values === false) {
+            throw new Exception("Failed to decode chunk table in '" . $this->getPath() . "'.");
+        }
         foreach ($values as $val) {
             $offset = ($val >> 8) * 4096;
             $size = ($val & 0xFF) * 4096;
@@ -79,7 +87,14 @@ class AnvilRegion implements RegionInterface
         }
 
         fseek($this->file, 4096);
-        $values = unpack('N1024', fread($this->file, 4 * 1024));
+        $rawData = fread($this->file, 4 * 1024);
+        if($rawData === false || strlen($rawData) !== 4 * 1024) {
+            throw new Exception("Failed to read timestamp table in '" . $this->getPath() . "'.");
+        }
+        $values = unpack('N1024', $rawData);
+        if($values === false) {
+            throw new Exception("Failed to decode timestamp table in '" . $this->getPath() . "'.");
+        }
         $i = 0;
         foreach ($values as $val) {
             if ($this->chunks[$i] !== null) {
@@ -193,7 +208,7 @@ class AnvilRegion implements RegionInterface
 
             $copyLength = $size - 5;
             if($verify){
-                $data = fread($this->file, $copyLength);
+                $data = $copyLength !== 0 ? fread($this->file, $copyLength) : "";
                 if($data === false || strlen($data) !== $copyLength){
                     throw new Exception(
                         sprintf('Failed to save region file to %s: chunk read failed', $filename)

@@ -3,6 +3,7 @@
 namespace Aternos\Thanos\Chunk;
 
 use Aternos\Thanos\Reader\ZlibReader;
+use Exception;
 
 /**
  * Class AnvilChunk
@@ -88,13 +89,20 @@ class AnvilChunk implements ChunkInterface
     /**
      * Read chunk header
      *
+     * @throws Exception
      */
     protected function readHeader(): void
     {
         $rawValue = unpack('N', fread($this->file, 4));
+        if($rawValue === false) {
+            throw new Exception("Failed to read chunk length.");
+        }
         $this->length = $rawValue['1'] + 4;
 
         $rawValue = unpack('C', fread($this->file, 1));
+        if($rawValue === false) {
+            throw new Exception("Failed to read chunk compression.");
+        }
         $this->compression = $rawValue['1'];
     }
 
@@ -123,13 +131,18 @@ class AnvilChunk implements ChunkInterface
      * Returns -1 if InhabitedTime could not be read
      *
      * @return int
+     * @throws Exception
      */
     public function getInhabitedTime(): int
     {
         if ($this->inhabitedTime === null) {
             $this->zlibReader->rewind();
             $data = $this->readAfter(hex2bin('04000D') . 'InhabitedTime', 8);
-            $this->inhabitedTime = $data !== null ? unpack('J', $data)['1'] : -1;
+            $rawData = $data !== null ? unpack('J', $data) : false;
+            if($rawData === false) {
+                return -1;
+            }
+            $this->inhabitedTime = $rawData['1'];
         }
 
         return $this->inhabitedTime;
@@ -142,6 +155,7 @@ class AnvilChunk implements ChunkInterface
      * @param int $length
      * @param int $limit
      * @return string|null
+     * @throws Exception
      */
     protected function readAfter(
         string $str,
@@ -238,13 +252,18 @@ class AnvilChunk implements ChunkInterface
      * Get time of last chunk update
      *
      * @return int
+     * @throws Exception
      */
     public function getLastUpdate(): int
     {
         if ($this->lastUpdate === null) {
             $this->zlibReader->rewind();
             $data = $this->readAfter(hex2bin('04000A') . 'LastUpdate', 8);
-            $this->lastUpdate = $data !== null ? unpack('J', $data)['1'] : -1;
+            $rawData = $data !== null ? unpack('J', $data) : false;
+            if($rawData === false) {
+                return -1;
+            }
+            $this->lastUpdate = $rawData['1'];
         }
 
         return $this->lastUpdate;
