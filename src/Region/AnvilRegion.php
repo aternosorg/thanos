@@ -41,6 +41,16 @@ class AnvilRegion implements RegionInterface
     protected $existingChunks = [];
 
     /**
+     * @var int
+     */
+    protected $xPos;
+
+    /**
+     * @var int
+     */
+    protected $yPos;
+
+    /**
      * AnvilRegion constructor.
      * @param string $file
      * @param string $dest
@@ -50,12 +60,26 @@ class AnvilRegion implements RegionInterface
         $this->path = $file;
         $this->file = fopen($file, 'r');
         $this->dest = $dest;
+        $this->findRegionPosition();
         $this->readChunkTable();
     }
 
     public function __destruct()
     {
         fclose($this->file);
+    }
+
+    /**
+     * @throws Exception
+     */
+    protected function findRegionPosition(): void
+    {
+        preg_match("#r\.(-?\d+)\.(-?\d+)\.mca$#", $this->path, $matches);
+        if(!isset($matches[1]) || !isset($matches[2])) {
+            throw new Exception("Unable to get region position from file name");
+        }
+        $this->xPos = intval($matches[1]);
+        $this->yPos = intval($matches[2]);
     }
 
     /**
@@ -74,13 +98,13 @@ class AnvilRegion implements RegionInterface
         if($values === false) {
             throw new Exception("Failed to decode chunk table in '" . $this->getPath() . "'.");
         }
-        foreach ($values as $val) {
+        foreach ($values as $i => $val) {
             $offset = ($val >> 8) * 4096;
             $size = ($val & 0xFF) * 4096;
             if ($offset === 0 && $size === 0) {
                 $this->chunks[] = null;
             } else {
-                $chunk = new AnvilChunk($this->file, ($val >> 8) * 4096);
+                $chunk = new AnvilChunk($this->file, ($val >> 8) * 4096, $this, $i);
                 $this->chunks[] = $chunk;
                 $this->existingChunks[] = $chunk;
             }
@@ -347,5 +371,25 @@ class AnvilRegion implements RegionInterface
     public function getDestination(): string
     {
         return $this->dest;
+    }
+
+    public function getRegionPosition() {
+
+    }
+
+    /**
+     * @return int
+     */
+    public function getXPos(): int
+    {
+        return $this->xPos;
+    }
+
+    /**
+     * @return int
+     */
+    public function getYPos(): int
+    {
+        return $this->yPos;
     }
 }

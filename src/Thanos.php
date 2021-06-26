@@ -2,7 +2,9 @@
 
 namespace Aternos\Thanos;
 
-use Aternos\Thanos\World\WorldInterface;
+use Aternos\Thanos\RegionDirectory\AnvilRegionDirectory;
+use Aternos\Thanos\World\AnvilWorld;
+use Nbt\Tag;
 
 /**
  * Class Thanos
@@ -37,22 +39,48 @@ class Thanos
     /**
      * Remove all unused chunks
      *
-     * @param WorldInterface $world
+     * @param AnvilWorld $world
      * @return int
+     * @throws \Exception
      */
-    public function snap(WorldInterface $world): int
+    public function snap(AnvilWorld $world): int
     {
         $world->copyOtherFiles();
         $removedChunks = 0;
-        foreach ($world as $chunk) {
-            $time = $chunk->getInhabitedTime();
-            if ($time > $this->minInhabitedTime || $time === -1) {
-                $chunk->save();
-            } else {
-                $removedChunks++;
+
+        foreach ($world->getRegionDirectories() as $regionDirectory) {
+            $forcedChunks = $this->getForceLoadedChunks($regionDirectory);
+            foreach ($regionDirectory as $chunk) {
+                if(in_array([$chunk->getGlobalXPos(), $chunk->getGlobalYPos()], $forcedChunks, true)) {
+                    $chunk->save();
+                    continue;
+                }
+                $time = $chunk->getInhabitedTime();
+                if ($time > $this->minInhabitedTime || $time === -1) {
+                    $chunk->save();
+                } else {
+                    $removedChunks++;
+                }
             }
         }
 
         return $removedChunks;
+    }
+
+    protected function getForceLoadedChunks(AnvilRegionDirectory $regionDirectory): array
+    {
+        $chunksDat = $regionDirectory->readDataFile("chunks.dat");
+        if(is_null($chunksDat)) {
+            return [];
+        }
+        $dataTag = $chunksDat->findChildByName("data");
+        if(!$dataTag) {
+            return [];
+        }
+        $forcedChunks = $dataTag->findChildByName("Forced");
+        if(!$forcedChunks || $forcedChunks->getType() !== Tag::TAG_LONG_ARRAY) {
+            return [];
+        }
+        return $forcedChunks->getValue();
     }
 }

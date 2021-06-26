@@ -3,6 +3,7 @@
 namespace Aternos\Thanos\Chunk;
 
 use Aternos\Thanos\Reader\ZlibReader;
+use Aternos\Thanos\Region\AnvilRegion;
 use Exception;
 
 /**
@@ -65,17 +66,42 @@ class AnvilChunk implements ChunkInterface
     protected $saved = false;
 
     /**
+     * @var int
+     */
+    protected $regionFileIndex;
+
+    /**
+     * @var int
+     */
+    protected $xPos;
+
+    /**
+     * @var int
+     */
+    protected $yPos;
+
+    /**
+     * @var AnvilRegion
+     */
+    protected $region;
+
+    /**
      * AnvilChunk constructor.
      *
      * @param resource $file
      * @param int $offset
      */
-    public function __construct($file, int $offset)
+    public function __construct($file, int $offset, AnvilRegion $region, int $regionFileIndex)
     {
         $this->file = $file;
         fseek($this->file, $offset);
         $this->offset = $offset;
         $this->dataOffset = $offset + 5;
+        $this->regionFileIndex = $regionFileIndex;
+        $this->region = $region;
+
+        $this->xPos = $this->regionFileIndex % 32;
+        $this->yPos = intdiv($this->regionFileIndex, 32);
 
         $this->readHeader();
         $this->zlibReader = new ZlibReader(
@@ -279,5 +305,45 @@ class AnvilChunk implements ChunkInterface
         fseek($this->file, $this->offset);
 
         return fread($this->file, $this->length);
+    }
+
+    /**
+     * @return int
+     */
+    public function getRegionXPos(): int
+    {
+        return $this->xPos;
+    }
+
+    /**
+     * @return int
+     */
+    public function getRegionYPos(): int
+    {
+        return $this->yPos;
+    }
+
+    /**
+     * @return int
+     */
+    public function getGlobalXPos(): int
+    {
+        return $this->region->getXPos() * 32 + $this->xPos;
+    }
+
+    /**
+     * @return int
+     */
+    public function getGlobalYPos(): int
+    {
+        return $this->region->getYPos() * 32 +  $this->yPos;
+    }
+
+    /**
+     * @return AnvilRegion
+     */
+    public function getRegion(): AnvilRegion
+    {
+        return $this->region;
     }
 }

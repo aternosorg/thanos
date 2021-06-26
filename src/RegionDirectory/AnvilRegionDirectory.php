@@ -6,6 +6,7 @@ use Aternos\Thanos\Chunk\AnvilChunk;
 use Exception;
 use Aternos\Thanos\Helper;
 use Aternos\Thanos\Region\AnvilRegion;
+use Nbt\Node;
 
 /**
  * Class AnvilRegionDirectory
@@ -319,5 +320,21 @@ class AnvilRegionDirectory implements RegionDirectoryInterface
     public function getDestination(): string
     {
         return $this->dest;
+    }
+
+    /**
+     * @param string $filename
+     * @return Node|null
+     */
+    public function readDataFile(string $filename): ?Node
+    {
+        $path = dirname($this->getPath()) . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . $filename;
+        if(!file_exists($path)) {
+            return null;
+        }
+        $nbtService = new \Nbt\Service(new \Nbt\DataHandler());
+
+        $tree = $nbtService->loadFile($path);
+        return $tree === false ? null : $tree;
     }
 }
