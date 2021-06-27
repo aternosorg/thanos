@@ -104,7 +104,7 @@ class AnvilRegion implements RegionInterface
             if ($offset === 0 && $size === 0) {
                 $this->chunks[] = null;
             } else {
-                $chunk = new AnvilChunk($this->file, ($val >> 8) * 4096, $this, $i);
+                $chunk = new AnvilChunk($this->file, ($val >> 8) * 4096, [$this->getXPos(), $this->getYPos()], $i);
                 $this->chunks[] = $chunk;
                 $this->existingChunks[] = $chunk;
             }

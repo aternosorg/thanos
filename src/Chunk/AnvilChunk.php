@@ -83,22 +83,25 @@ class AnvilChunk implements ChunkInterface
     /**
      * @var AnvilRegion
      */
-    protected $region;
+    protected $regionPosition;
 
     /**
      * AnvilChunk constructor.
      *
      * @param resource $file
      * @param int $offset
+     * @param int[] $regionPosition
+     * @param int $regionFileIndex
+     * @throws Exception
      */
-    public function __construct($file, int $offset, AnvilRegion $region, int $regionFileIndex)
+    public function __construct($file, int $offset, array $regionPosition, int $regionFileIndex)
     {
         $this->file = $file;
         fseek($this->file, $offset);
         $this->offset = $offset;
         $this->dataOffset = $offset + 5;
         $this->regionFileIndex = $regionFileIndex;
-        $this->region = $region;
+        $this->regionPosition = $regionPosition;
 
         $this->xPos = $this->regionFileIndex % 32;
         $this->yPos = intdiv($this->regionFileIndex, 32);
@@ -328,7 +331,7 @@ class AnvilChunk implements ChunkInterface
      */
     public function getGlobalXPos(): int
     {
-        return $this->region->getXPos() * 32 + $this->xPos;
+        return $this->regionPosition[0] * 32 + $this->xPos;
     }
 
     /**
@@ -336,14 +339,6 @@ class AnvilChunk implements ChunkInterface
      */
     public function getGlobalYPos(): int
     {
-        return $this->region->getYPos() * 32 +  $this->yPos;
-    }
-
-    /**
-     * @return AnvilRegion
-     */
-    public function getRegion(): AnvilRegion
-    {
-        return $this->region;
+        return $this->regionPosition[1] * 32 +  $this->yPos;
     }
 }
