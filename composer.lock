@@ -4,8 +4,78 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "203d1e453165bf93602ed73e0048b058",
+    "content-hash": "50fd6914e88242da3ec945c3d7695911",
     "packages": [
+        {
+            "name": "aternos/nbt",
+            "version": "4.0.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/aternosorg/NBT.git",
+                "reference": "aa7582c2aceebdb4c6d6816f626a41397ac99692"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/aternosorg/NBT/zipball/aa7582c2aceebdb4c6d6816f626a41397ac99692",
+                "reference": "aa7582c2aceebdb4c6d6816f626a41397ac99692",
+                "shasum": ""
+            },
+            "require": {
+                "nicmart/tree": "~0.2",
+                "php": ">=5.4.0"
+            },
+            "require-dev": {
+                "mikey179/vfsstream": "^1.6.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Nbt\\": "src/",
+                    "Nbt\\Tests\\": "tests/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Justin Martin",
+                    "email": "frozenfire@thefrozenfire.com",
+                    "homepage": "https://github.com/TheFrozenFire",
+                    "role": "Developer"
+                },
+                {
+                    "name": "James Lowe",
+                    "homepage": "https://github.com/jegol",
+                    "role": "Developer"
+                },
+                {
+                    "name": "Kevin Andrews",
+                    "email": "kevin@zvps.co.uk",
+                    "homepage": "https://github.com/Caffe1neAdd1ct",
+                    "role": "Developer"
+                },
+                {
+                    "name": "Rick Selby",
+                    "email": "rick@selby-family.co.uk",
+                    "homepage": "https://github.com/rickselby",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Parser/Writer for the NBT file format",
+            "homepage": "https://github.com/rickselby/NBT",
+            "keywords": [
+                "NBT",
+                "binary",
+                "decode",
+                "encode"
+            ],
+            "support": {
+                "source": "https://github.com/aternosorg/NBT/tree/4.0.3"
+            },
+            "time": "2021-06-26T16:06:44+00:00"
+        },
         {
             "name": "nicmart/tree",
             "version": "0.3.1",
@@ -51,75 +121,6 @@
                 "source": "https://github.com/nicmart/Tree/tree/0.3.1"
             },
             "time": "2020-11-27T09:02:17+00:00"
-        },
-        {
-            "name": "rickselby/nbt",
-            "version": "4.0.3",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/aternosorg/NBT.git",
-                "reference": "aa7582c2aceebdb4c6d6816f626a41397ac99692"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/aternosorg/NBT/zipball/aa7582c2aceebdb4c6d6816f626a41397ac99692",
-                "reference": "aa7582c2aceebdb4c6d6816f626a41397ac99692",
-                "shasum": ""
-            },
-            "require": {
-                "nicmart/tree": "~0.2",
-                "php": ">=5.4.0"
-            },
-            "require-dev": {
-                "mikey179/vfsstream": "^1.6.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Nbt\\": "src/",
-                    "Nbt\\Tests\\": "tests/"
-                }
-            },
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Justin Martin",
-                    "email": "frozenfire@thefrozenfire.com",
-                    "homepage": "https://github.com/TheFrozenFire",
-                    "role": "Developer"
-                },
-                {
-                    "name": "James Lowe",
-                    "homepage": "https://github.com/jegol",
-                    "role": "Developer"
-                },
-                {
-                    "name": "Kevin Andrews",
-                    "email": "kevin@zvps.co.uk",
-                    "homepage": "https://github.com/Caffe1neAdd1ct",
-                    "role": "Developer"
-                },
-                {
-                    "name": "Rick Selby",
-                    "email": "rick@selby-family.co.uk",
-                    "homepage": "https://github.com/rickselby",
-                    "role": "Developer"
-                }
-            ],
-            "description": "Parser/Writer for the NBT file format",
-            "homepage": "https://github.com/rickselby/NBT",
-            "keywords": [
-                "NBT",
-                "binary",
-                "decode",
-                "encode"
-            ],
-            "support": {
-                "source": "https://github.com/aternosorg/NBT/tree/4.0.3"
-            },
-            "time": "2021-06-26T16:06:44+00:00"
         }
     ],
     "packages-dev": [],
