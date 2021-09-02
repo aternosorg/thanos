@@ -4,34 +4,31 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "50fd6914e88242da3ec945c3d7695911",
+    "content-hash": "2ffc758a50779c86d977f7ec9f2d0072",
     "packages": [
         {
             "name": "aternos/nbt",
-            "version": "4.0.3",
+            "version": "v1.0.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/aternosorg/NBT.git",
-                "reference": "aa7582c2aceebdb4c6d6816f626a41397ac99692"
+                "url": "https://github.com/aternosorg/php-nbt.git",
+                "reference": "01dfd57ee8a380eabfb2b87c8e4cf69a8136951b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aternosorg/NBT/zipball/aa7582c2aceebdb4c6d6816f626a41397ac99692",
-                "reference": "aa7582c2aceebdb4c6d6816f626a41397ac99692",
+                "url": "https://api.github.com/repos/aternosorg/php-nbt/zipball/01dfd57ee8a380eabfb2b87c8e4cf69a8136951b",
+                "reference": "01dfd57ee8a380eabfb2b87c8e4cf69a8136951b",
                 "shasum": ""
             },
             "require": {
-                "nicmart/tree": "~0.2",
-                "php": ">=5.4.0"
-            },
-            "require-dev": {
-                "mikey179/vfsstream": "^1.6.0"
+                "ext-zlib": "*",
+                "php-64bit": "*",
+                "pocketmine/binaryutils": "^0.2.1"
             },
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "Nbt\\": "src/",
-                    "Nbt\\Tests\\": "tests/"
+                    "Aternos\\Nbt\\": "src/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -40,87 +37,56 @@
             ],
             "authors": [
                 {
-                    "name": "Justin Martin",
-                    "email": "frozenfire@thefrozenfire.com",
-                    "homepage": "https://github.com/TheFrozenFire",
-                    "role": "Developer"
-                },
-                {
-                    "name": "James Lowe",
-                    "homepage": "https://github.com/jegol",
-                    "role": "Developer"
-                },
-                {
-                    "name": "Kevin Andrews",
-                    "email": "kevin@zvps.co.uk",
-                    "homepage": "https://github.com/Caffe1neAdd1ct",
-                    "role": "Developer"
-                },
-                {
-                    "name": "Rick Selby",
-                    "email": "rick@selby-family.co.uk",
-                    "homepage": "https://github.com/rickselby",
-                    "role": "Developer"
+                    "name": "Kurt Thiemann",
+                    "email": "kurt@aternos.org"
                 }
             ],
-            "description": "Parser/Writer for the NBT file format",
-            "homepage": "https://github.com/rickselby/NBT",
-            "keywords": [
-                "NBT",
-                "binary",
-                "decode",
-                "encode"
-            ],
+            "description": "PHP library to parse, modify, and create NBT objects",
             "support": {
-                "source": "https://github.com/aternosorg/NBT/tree/4.0.3"
+                "issues": "https://github.com/aternosorg/php-nbt/issues",
+                "source": "https://github.com/aternosorg/php-nbt/tree/v1.0.0"
             },
-            "time": "2021-06-26T16:06:44+00:00"
+            "time": "2021-09-02T15:36:50+00:00"
         },
         {
-            "name": "nicmart/tree",
-            "version": "0.3.1",
+            "name": "pocketmine/binaryutils",
+            "version": "0.2.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/nicmart/Tree.git",
-                "reference": "c55ba47c64a3cb7454c22e6d630729fc2aab23ff"
+                "url": "https://github.com/pmmp/BinaryUtils.git",
+                "reference": "8cd078e2426f8100331f2d73bef10f481dad6cde"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nicmart/Tree/zipball/c55ba47c64a3cb7454c22e6d630729fc2aab23ff",
-                "reference": "c55ba47c64a3cb7454c22e6d630729fc2aab23ff",
+                "url": "https://api.github.com/repos/pmmp/BinaryUtils/zipball/8cd078e2426f8100331f2d73bef10f481dad6cde",
+                "reference": "8cd078e2426f8100331f2d73bef10f481dad6cde",
                 "shasum": ""
             },
             "require": {
-                "php": "^7.1 || ^8.0"
+                "php": "^7.4 || ^8.0",
+                "php-64bit": "*"
             },
             "require-dev": {
-                "ergebnis/composer-normalize": "^2.8.0",
-                "ergebnis/license": "^1.0.0",
-                "ergebnis/php-cs-fixer-config": "^2.2.1",
-                "phpunit/phpunit": "^7.5.20"
+                "phpstan/extension-installer": "^1.0",
+                "phpstan/phpstan": "0.12.85",
+                "phpstan/phpstan-strict-rules": "^0.12.4"
             },
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "Tree\\": "src/"
+                    "pocketmine\\utils\\": "src/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
-                "MIT"
+                "LGPL-3.0"
             ],
-            "authors": [
-                {
-                    "name": "Nicolò Martini",
-                    "email": "nicmartnic@gmail.com"
-                }
-            ],
-            "description": "A basic but flexible php tree data structure and a fluent tree builder implementation.",
+            "description": "Classes and methods for conveniently handling binary data",
             "support": {
-                "issues": "https://github.com/nicmart/Tree/issues",
-                "source": "https://github.com/nicmart/Tree/tree/0.3.1"
+                "issues": "https://github.com/pmmp/BinaryUtils/issues",
+                "source": "https://github.com/pmmp/BinaryUtils/tree/0.2.1"
             },
-            "time": "2020-11-27T09:02:17+00:00"
+            "time": "2021-05-30T19:42:57+00:00"
         }
     ],
     "packages-dev": [],

@@ -2,11 +2,13 @@
 
 namespace Aternos\Thanos\RegionDirectory;
 
+use Aternos\Nbt\IO\Reader\GZipCompressedStringReader;
+use Aternos\Nbt\NbtFormat;
+use Aternos\Nbt\Tag\Tag;
 use Aternos\Thanos\Chunk\AnvilChunk;
 use Exception;
 use Aternos\Thanos\Helper;
 use Aternos\Thanos\Region\AnvilRegion;
-use Nbt\Node;
 
 /**
  * Class AnvilRegionDirectory
@@ -325,16 +327,14 @@ class AnvilRegionDirectory implements RegionDirectoryInterface
     /**
      * @param string $filename
      * @return Node|null
+     * @throws Exception
      */
-    public function readDataFile(string $filename): ?Node
+    public function readDataFile(string $filename): ?Tag
     {
         $path = dirname($this->getPath()) . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . $filename;
         if(!file_exists($path)) {
             return null;
         }
-        $nbtService = new \Nbt\Service(new \Nbt\DataHandler());
-
-        $tree = $nbtService->loadFile($path);
-        return $tree === false ? null : $tree;
+        return Tag::load(new GZipCompressedStringReader(file_get_contents($path), NbtFormat::JAVA_EDITION));
     }
 }

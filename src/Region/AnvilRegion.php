@@ -54,6 +54,7 @@ class AnvilRegion implements RegionInterface
      * AnvilRegion constructor.
      * @param string $file
      * @param string $dest
+     * @throws Exception
      */
     public function __construct(string $file, string $dest)
     {
@@ -371,10 +372,6 @@ class AnvilRegion implements RegionInterface
     public function getDestination(): string
     {
         return $this->dest;
-    }
-
-    public function getRegionPosition() {
-
     }
 
     /**
