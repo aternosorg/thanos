@@ -103,7 +103,7 @@ class AnvilChunk implements ChunkInterface
         $this->regionFileIndex = $regionFileIndex;
         $this->regionPosition = $regionPosition;
 
-        $this->xPos = $this->regionFileIndex % 32;
+        $this->xPos = ($this->regionFileIndex % 32) - 1;
         $this->yPos = intdiv($this->regionFileIndex, 32);
 
         $this->readHeader();
