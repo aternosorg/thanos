@@ -43,9 +43,9 @@ interface WorldInterface extends Iterator
 
     /**
      *
-     * @return ChunkInterface
+     * @return ChunkInterface|null
      */
-    public function current();
+    public function current(): ?ChunkInterface;
 
     /**
      * Check if a directory is a world directory

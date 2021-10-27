@@ -15,27 +15,27 @@ class ZlibReader implements ReaderInterface
     /**
      * @var int
      */
-    protected $offset;
+    protected int $offset;
 
     /**
      * @var int
      */
-    protected $length;
+    protected int $length;
 
     /**
      * @var int
      */
-    protected $resourcePointer;
+    protected int $resourcePointer;
 
     /**
      * @var int
      */
-    protected $pointer = 0;
+    protected int $pointer = 0;
 
     /**
      * @var string
      */
-    protected $data = '';
+    protected string $data = '';
 
     /**
      * @var resource
@@ -45,7 +45,7 @@ class ZlibReader implements ReaderInterface
     /**
      * @var int
      */
-    protected $compression;
+    protected int $compression;
 
     /**
      * @var resource
@@ -113,7 +113,7 @@ class ZlibReader implements ReaderInterface
                 throw new Exception("Failed to inflate input data.");
             }
             $this->data .= $uncompressedData;
-            $this->resourcePointer = ftell($this->resource);
+            $this->resourcePointer = ftell($this->resource) ?: $this->resourcePointer + strlen($rawData);
         }
 
         $data = substr($this->data, $this->pointer, $length);

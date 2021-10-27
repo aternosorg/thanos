@@ -46,7 +46,7 @@ interface RegionInterface extends Countable
      *
      * @param int $x
      * @param int $z
-     * @return ChunkInterface
+     * @return ChunkInterface|null
      */
     public function getChunkAt(int $x, int $z): ?ChunkInterface;
 

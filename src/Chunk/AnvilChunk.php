@@ -3,7 +3,6 @@
 namespace Aternos\Thanos\Chunk;
 
 use Aternos\Thanos\Reader\ZlibReader;
-use Aternos\Thanos\Region\AnvilRegion;
 use Exception;
 
 /**
@@ -23,67 +22,67 @@ class AnvilChunk implements ChunkInterface
     /**
      * @var int
      */
-    protected $offset;
+    protected int $offset;
 
     /**
      * @var int
      */
-    protected $dataOffset;
+    protected int $dataOffset;
 
     /**
      * @var int
      */
-    protected $length;
+    protected int $length;
 
     /**
      * @var int
      */
-    protected $compression;
+    protected int $compression;
 
     /**
-     * @var int
+     * @var int|null
      */
-    protected $timestamp = null;
+    protected ?int $timestamp = null;
 
     /**
-     * @var int
+     * @var int|null
      */
-    protected $inhabitedTime;
+    protected ?int $inhabitedTime = null;
 
     /**
-     * @var int
+     * @var int|null
      */
-    protected $lastUpdate;
+    protected ?int $lastUpdate = null;
 
     /**
      * @var ZlibReader
      */
-    protected $zlibReader;
+    protected ZlibReader $zlibReader;
 
     /**
      * @var bool
      */
-    protected $saved = false;
+    protected bool $saved = false;
 
     /**
      * @var int
      */
-    protected $regionFileIndex;
+    protected int $regionFileIndex;
 
     /**
      * @var int
      */
-    protected $xPos;
+    protected int $xPos;
 
     /**
      * @var int
      */
-    protected $yPos;
+    protected int $yPos;
 
     /**
-     * @var AnvilRegion
+     * @var int[]
      */
-    protected $regionPosition;
+    protected array $regionPosition;
 
     /**
      * AnvilChunk constructor.

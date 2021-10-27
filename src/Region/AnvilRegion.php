@@ -23,32 +23,32 @@ class AnvilRegion implements RegionInterface
     /**
      * @var string
      */
-    public $path;
+    public string $path;
 
     /**
      * @var string
      */
-    public $dest;
+    public string $dest;
 
     /**
      * @var AnvilChunk[]
      */
-    protected $chunks = [];
+    protected array $chunks = [];
 
     /**
      * @var AnvilChunk[]
      */
-    protected $existingChunks = [];
+    protected array $existingChunks = [];
 
     /**
      * @var int
      */
-    protected $xPos;
+    protected int $xPos;
 
     /**
      * @var int
      */
-    protected $yPos;
+    protected int $yPos;
 
     /**
      * AnvilRegion constructor.
@@ -134,7 +134,7 @@ class AnvilRegion implements RegionInterface
      *
      * @param int $x
      * @param int $z
-     * @return AnvilChunk
+     * @return AnvilChunk|null
      */
     public function getChunkAt(int $x, int $z): ?ChunkInterface
     {
@@ -192,7 +192,7 @@ class AnvilRegion implements RegionInterface
             );
         }
 
-        foreach ($this->chunks as $i => $chunk) {
+        foreach ($this->chunks as $chunk) {
             if ($chunk === null || !$chunk->isSaved()) {
                 $chunkTable[] = pack('N', 0);
                 $timestampTable[] = pack('N', 0);
@@ -327,7 +327,7 @@ class AnvilRegion implements RegionInterface
      * The return value is cast to an integer.
      * @since 5.1.0
      */
-    public function count()
+    public function count(): int
     {
         return count($this->existingChunks);
     }

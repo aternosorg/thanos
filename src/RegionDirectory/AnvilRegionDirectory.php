@@ -27,55 +27,64 @@ class AnvilRegionDirectory implements RegionDirectoryInterface
     /**
      * @var string
      */
-    protected $path;
+    protected string $path;
 
     /**
      * @var string
      */
-    protected $dest;
+    protected string $dest;
 
     /**
      * @var string[]
      */
-    protected $files;
+    protected array $files;
 
     /**
      * @var string[]
      */
-    protected $regionFiles;
+    protected array $regionFiles = [];
 
     /**
      * @var string[]
      */
-    protected $otherFiles;
+    protected array $otherFiles = [];
 
     /**
      * @var int
      */
-    protected $iterationIndex = 0;
+    protected int $iterationIndex = 0;
 
     /**
      * @var int
      */
-    protected $regionPointer = 0;
+    protected int $regionPointer = 0;
 
     /**
      * @var int
      */
-    protected $chunkPointer = 0;
+    protected int $chunkPointer = 0;
 
     /**
-     * @var AnvilRegion
+     * @var AnvilRegion|null
      */
-    protected $currentRegion;
+    protected ?AnvilRegion $currentRegion = null;
 
+    /**
+     * @param string $path
+     * @param string $dest
+     * @throws Exception
+     */
     public function __construct(string $path, string $dest)
     {
         $this->path = $path;
         $this->dest = $dest;
-        $this->files = scandir($path);
-        $this->regionFiles = [];
-        $this->otherFiles = [];
+
+        $files = scandir($path);
+        if($files === false) {
+            throw new Exception("Failed to read directory " . $path);
+        }
+        $this->files = $files;
+
         foreach ($this->files as $file) {
             if (
                 $file === static::CURRENT_DIRECTORY
@@ -132,6 +141,7 @@ class AnvilRegionDirectory implements RegionDirectoryInterface
      * Get all regions in this directory (this will read all region file headers and all chunk headers)
      *
      * @return AnvilRegion[]
+     * @throws Exception
      */
     public function getRegions(): array
     {
@@ -151,7 +161,7 @@ class AnvilRegionDirectory implements RegionDirectoryInterface
      */
     protected function saveCurrentRegion(): void
     {
-        if ($this->currentRegion) {
+        if ($this->currentRegion !== null) {
             try {
                 $this->currentRegion->save();
             } catch (Exception $e) {
@@ -193,12 +203,12 @@ class AnvilRegionDirectory implements RegionDirectoryInterface
     /**
      * Return the current element
      * @link https://php.net/manual/en/iterator.current.php
-     * @return AnvilChunk
+     * @return AnvilChunk|null
      * @since 5.0.0
      */
-    public function current()
+    public function current(): ?AnvilChunk
     {
-        return isset($this->currentRegion)
+        return $this->currentRegion !== null
             ? $this->currentRegion->getChunks()[$this->chunkPointer]
             : null
         ;
@@ -236,10 +246,10 @@ class AnvilRegionDirectory implements RegionDirectoryInterface
     /**
      * Return the key of the current element
      * @link https://php.net/manual/en/iterator.key.php
-     * @return mixed scalar on success, or null on failure.
+     * @return int scalar on success, or null on failure.
      * @since 5.0.0
      */
-    public function key()
+    public function key(): int
     {
         return $this->iterationIndex;
     }
@@ -247,11 +257,11 @@ class AnvilRegionDirectory implements RegionDirectoryInterface
     /**
      * Checks if current position is valid
      * @link https://php.net/manual/en/iterator.valid.php
-     * @return boolean The return value will be casted to boolean and then evaluated.
+     * @return boolean The return value will be cast to boolean and then evaluated.
      * Returns true on success or false on failure.
      * @since 5.0.0
      */
-    public function valid()
+    public function valid(): bool
     {
         return $this->regionPointer < count($this->regionFiles);
     }
@@ -326,7 +336,7 @@ class AnvilRegionDirectory implements RegionDirectoryInterface
 
     /**
      * @param string $filename
-     * @return Node|null
+     * @return Tag|null
      * @throws Exception
      */
     public function readDataFile(string $filename): ?Tag

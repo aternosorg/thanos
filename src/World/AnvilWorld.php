@@ -36,48 +36,53 @@ class AnvilWorld implements WorldInterface
     /**
      * @var string
      */
-    protected $path;
+    protected string $path;
 
     /**
      * @var string;
      */
-    protected $dest;
+    protected string $dest;
 
     /**
      * @var string[]
      */
-    protected $files;
+    protected array $files;
 
     /**
      * @var AnvilRegionDirectory[]
      */
-    protected $regionDirectories;
+    protected array $regionDirectories;
 
     /**
      * @var string[]
      */
-    protected $otherFiles;
+    protected array $otherFiles;
 
     /**
      * @var int
      */
-    protected $regionDirectoryPointer = 0;
+    protected int $regionDirectoryPointer = 0;
 
     /**
      * @var int
      */
-    protected $chunkPointer = 0;
+    protected int $chunkPointer = 0;
 
     /**
      * AnvilWorld constructor.
      * @param string $path
      * @param string $dest
+     * @throws Exception
      */
     public function __construct(string $path, string $dest)
     {
         $this->path = $path;
         $this->dest = $dest;
-        $this->files = scandir($path);
+        $files = scandir($path);
+        if($files === false) {
+            throw new Exception("Failed to read directory " . $path);
+        }
+        $this->files = $files;
         $this->findRegionDirectories();
     }
 
@@ -95,10 +100,12 @@ class AnvilWorld implements WorldInterface
      * Find the region directories of all dimensions
      *
      * @return string[]
+     * @throws Exception
      */
     protected function findRegionDirectories(): array
     {
         $this->regionDirectories = [];
+        $this->otherFiles = [];
         foreach ($this->files as $file) {
             if (
                 $file === static::CURRENT_DIRECTORY
@@ -227,10 +234,10 @@ class AnvilWorld implements WorldInterface
     /**
      * Return the current element
      * @link https://php.net/manual/en/iterator.current.php
-     * @return AnvilChunk
+     * @return AnvilChunk|null
      * @since 5.0.0
      */
-    public function current()
+    public function current() : ?AnvilChunk
     {
         if (!isset($this->regionDirectories[$this->regionDirectoryPointer])) {
             return null;
@@ -263,10 +270,10 @@ class AnvilWorld implements WorldInterface
     /**
      * Return the key of the current element
      * @link https://php.net/manual/en/iterator.key.php
-     * @return mixed scalar on success, or null on failure.
+     * @return int scalar on success, or null on failure.
      * @since 5.0.0
      */
-    public function key()
+    public function key(): int
     {
         return $this->chunkPointer;
     }
@@ -274,11 +281,11 @@ class AnvilWorld implements WorldInterface
     /**
      * Checks if current position is valid
      * @link https://php.net/manual/en/iterator.valid.php
-     * @return boolean The return value will be casted to boolean and then evaluated.
+     * @return boolean The return value will be cast to boolean and then evaluated.
      * Returns true on success or false on failure.
      * @since 5.0.0
      */
-    public function valid()
+    public function valid(): bool
     {
         return isset($this->regionDirectories[$this->regionDirectoryPointer]) &&
             $this->regionDirectories[$this->regionDirectoryPointer]->valid();

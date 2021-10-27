@@ -5,6 +5,7 @@ namespace Aternos\Thanos;
 use Aternos\Nbt\Tag\LongArrayTag;
 use Aternos\Thanos\RegionDirectory\AnvilRegionDirectory;
 use Aternos\Thanos\World\AnvilWorld;
+use Exception;
 
 /**
  * Class Thanos
@@ -18,7 +19,7 @@ class Thanos
     /**
      * @var int
      */
-    protected $minInhabitedTime = 0;
+    protected int $minInhabitedTime = 0;
 
     /**
      * @param int $minInhabitedTime
@@ -41,7 +42,7 @@ class Thanos
      *
      * @param AnvilWorld $world
      * @return int
-     * @throws \Exception
+     * @throws Exception
      */
     public function snap(AnvilWorld $world): int
     {
@@ -67,6 +68,14 @@ class Thanos
         return $removedChunks;
     }
 
+    /**
+     * Get all force-loaded chunks
+     * If a chunk was manually loaded, it should not be removed
+     *
+     * @param AnvilRegionDirectory $regionDirectory
+     * @return array
+     * @throws Exception
+     */
     protected function getForceLoadedChunks(AnvilRegionDirectory $regionDirectory): array
     {
         $chunksDat = $regionDirectory->readDataFile("chunks.dat");
@@ -83,15 +92,15 @@ class Thanos
         }
 
         $data = $list->getRawValue();
-        $coords = [];
-        $coord = [];
+        $coordinates = [];
+        $currentCoordinate = [];
         for($i = 0; $i < count($list)*2; $i++) {
-            $coord[] = unpack("N", $data, $i*4)[1] << 32 >> 32;
+            $currentCoordinate[] = unpack("N", $data, $i*4)[1] << 32 >> 32;
             if($i % 2 === 1) {
-                $coords[] = $coord;
-                $coord = [];
+                $coordinates[] = $currentCoordinate;
+                $currentCoordinate = [];
             }
         }
-        return $coords;
+        return $coordinates;
     }
 }
