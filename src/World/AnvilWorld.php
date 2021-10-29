@@ -176,7 +176,10 @@ class AnvilWorld implements WorldInterface
      */
     public static function isWorld(string $path): bool
     {
-        $files = scandir($path);
+        $files = @scandir($path);
+        if($files === false) {
+            return false;
+        }
         return in_array(static::FILE_LEVEL_DATA, $files)
             && count(array_intersect([static::FILE_REGION, static::FILE_NETHER, static::FILE_THE_END], $files));
     }
