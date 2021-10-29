@@ -4,24 +4,26 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "69b3f694cb0a1a3885f081c35165505f",
+    "content-hash": "74696621715eb41c7d5329237be321ac",
     "packages": [
         {
             "name": "aternos/nbt",
-            "version": "v1.0.0",
+            "version": "v1.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aternosorg/php-nbt.git",
-                "reference": "01dfd57ee8a380eabfb2b87c8e4cf69a8136951b"
+                "reference": "69a58cd670e8bd17f89ee7a5de7dd544cd8a23e5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aternosorg/php-nbt/zipball/01dfd57ee8a380eabfb2b87c8e4cf69a8136951b",
-                "reference": "01dfd57ee8a380eabfb2b87c8e4cf69a8136951b",
+                "url": "https://api.github.com/repos/aternosorg/php-nbt/zipball/69a58cd670e8bd17f89ee7a5de7dd544cd8a23e5",
+                "reference": "69a58cd670e8bd17f89ee7a5de7dd544cd8a23e5",
                 "shasum": ""
             },
             "require": {
+                "ext-json": "*",
                 "ext-zlib": "*",
+                "php": "^7.4 || ^8.0",
                 "php-64bit": "*",
                 "pocketmine/binaryutils": "^0.2.1"
             },
@@ -44,9 +46,9 @@
             "description": "PHP library to parse, modify, and create NBT objects",
             "support": {
                 "issues": "https://github.com/aternosorg/php-nbt/issues",
-                "source": "https://github.com/aternosorg/php-nbt/tree/v1.0.0"
+                "source": "https://github.com/aternosorg/php-nbt/tree/v1.2.0"
             },
-            "time": "2021-09-02T15:36:50+00:00"
+            "time": "2021-10-27T09:54:19+00:00"
         },
         {
             "name": "pocketmine/binaryutils",
@@ -96,7 +98,7 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=7.4",
+        "php": "^7.4 || ^8.0",
         "ext-zlib": "*"
     },
     "platform-dev": [],
