@@ -2,6 +2,7 @@
 
 namespace Aternos\Thanos;
 
+use Aternos\Nbt\Tag\CompoundTag;
 use Aternos\Nbt\Tag\LongArrayTag;
 use Aternos\Thanos\RegionDirectory\AnvilRegionDirectory;
 use Aternos\Thanos\World\AnvilWorld;
@@ -79,15 +80,17 @@ class Thanos
     protected function getForceLoadedChunks(AnvilRegionDirectory $regionDirectory): array
     {
         $chunksDat = $regionDirectory->readDataFile("chunks.dat");
-        if(is_null($chunksDat)) {
-            return [];
-        }
-        if(!isset($chunksDat["data"]) || !isset($chunksDat["data"]["Forced"])) {
+        if(!$chunksDat instanceof CompoundTag) {
             return [];
         }
 
-        $list = $chunksDat["data"]["Forced"];
-        if(!($list instanceof LongArrayTag)) {
+        $data = $chunksDat->getCompound("data");
+        if($data === null) {
+            return [];
+        }
+
+        $list = $data->getLongArray("Forced");
+        if($list === null) {
             return [];
         }
 
