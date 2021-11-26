@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "aternos/nbt",
-            "version": "v1.2.0",
+            "version": "v1.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aternosorg/php-nbt.git",
-                "reference": "69a58cd670e8bd17f89ee7a5de7dd544cd8a23e5"
+                "reference": "692eb120b1a7b71e9c1aa149c4eacb3536cf4223"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aternosorg/php-nbt/zipball/69a58cd670e8bd17f89ee7a5de7dd544cd8a23e5",
-                "reference": "69a58cd670e8bd17f89ee7a5de7dd544cd8a23e5",
+                "url": "https://api.github.com/repos/aternosorg/php-nbt/zipball/692eb120b1a7b71e9c1aa149c4eacb3536cf4223",
+                "reference": "692eb120b1a7b71e9c1aa149c4eacb3536cf4223",
                 "shasum": ""
             },
             "require": {
@@ -46,9 +46,9 @@
             "description": "PHP library to parse, modify, and create NBT objects",
             "support": {
                 "issues": "https://github.com/aternosorg/php-nbt/issues",
-                "source": "https://github.com/aternosorg/php-nbt/tree/v1.2.0"
+                "source": "https://github.com/aternosorg/php-nbt/tree/v1.3.0"
             },
-            "time": "2021-10-27T09:54:19+00:00"
+            "time": "2021-11-25T11:41:16+00:00"
         },
         {
             "name": "pocketmine/binaryutils",
