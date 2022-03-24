@@ -221,7 +221,7 @@ class AnvilRegionDirectory implements RegionDirectoryInterface
      * @since 5.0.0
      * @throws Exception
      */
-    public function next()
+    public function next(): void
     {
         $this->iterationIndex++;
         if (isset($this->currentRegion->getChunks()[$this->chunkPointer + 1])) {
@@ -272,7 +272,7 @@ class AnvilRegionDirectory implements RegionDirectoryInterface
      * @return void Any returned value is ignored.
      * @since 5.0.0
      */
-    public function rewind()
+    public function rewind(): void
     {
         $this->saveCurrentRegion();
         $this->regionPointer = 0;

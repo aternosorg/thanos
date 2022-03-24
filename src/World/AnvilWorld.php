@@ -256,7 +256,7 @@ class AnvilWorld implements WorldInterface
      * @since 5.0.0
      * @throws Exception
      */
-    public function next()
+    public function next(): void
     {
         $regionDirectory = $this->regionDirectories[$this->regionDirectoryPointer] ?? null;
 
@@ -300,7 +300,7 @@ class AnvilWorld implements WorldInterface
      * @return void Any returned value is ignored.
      * @since 5.0.0
      */
-    public function rewind()
+    public function rewind(): void
     {
         if (isset($this->regionDirectories[$this->regionDirectoryPointer])) {
             $this->regionDirectories[$this->regionDirectoryPointer]->saveAll();
