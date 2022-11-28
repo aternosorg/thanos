@@ -188,7 +188,7 @@ class AnvilChunk implements ChunkInterface
     protected function readAfter(
         string $str,
         int $length,
-        int $limit = 8192
+        int $limit = 1024 * 1024 * 10
     ): ?string {
         $startPointer = $this->zlibReader->tell();
         $strPointer = 0;
@@ -197,7 +197,7 @@ class AnvilChunk implements ChunkInterface
             !$this->zlibReader->eof()
             && $this->zlibReader->tell() < $startPointer + $limit
         ) {
-            $data = $this->zlibReader->read(512);
+            $data = $this->zlibReader->read(2048);
             $dataStart = $this->zlibReader->tell() - strlen($data);
             $pos = strpos($data, $str);
             if ($pos !== false) {
