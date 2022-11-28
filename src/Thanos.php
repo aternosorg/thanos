@@ -22,6 +22,8 @@ class Thanos
      */
     protected int $minInhabitedTime = 0;
 
+    protected bool $removeUnknownChunks = false;
+
     /**
      * @param int $minInhabitedTime
      */
@@ -58,7 +60,7 @@ class Thanos
                     continue;
                 }
                 $time = $chunk->getInhabitedTime();
-                if ($time > $this->minInhabitedTime || $time === -1) {
+                if ($time > $this->minInhabitedTime || ($time === -1 && !$this->removeUnknownChunks)) {
                     $chunk->save();
                 } else {
                     $removedChunks++;
@@ -105,5 +107,21 @@ class Thanos
             }
         }
         return $coordinates;
+    }
+
+    /**
+     * @param bool $removeUnknownChunks
+     */
+    public function setRemoveUnknownChunks(bool $removeUnknownChunks): void
+    {
+        $this->removeUnknownChunks = $removeUnknownChunks;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isRemoveUnknownChunks(): bool
+    {
+        return $this->removeUnknownChunks;
     }
 }
