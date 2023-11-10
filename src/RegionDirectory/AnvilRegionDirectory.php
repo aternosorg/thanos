@@ -4,6 +4,7 @@ namespace Aternos\Thanos\RegionDirectory;
 
 use Aternos\Nbt\IO\Reader\GZipCompressedStringReader;
 use Aternos\Nbt\NbtFormat;
+use Aternos\Nbt\Tag\CompoundTag;
 use Aternos\Nbt\Tag\Tag;
 use Aternos\Thanos\Chunk\AnvilChunk;
 use Exception;
@@ -346,5 +347,38 @@ class AnvilRegionDirectory implements RegionDirectoryInterface
             return null;
         }
         return Tag::load(new GZipCompressedStringReader(file_get_contents($path), NbtFormat::JAVA_EDITION));
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getForceLoadedChunks(): array
+    {
+        $chunksDat = $this->readDataFile("chunks.dat");
+        if(!$chunksDat instanceof CompoundTag) {
+            return [];
+        }
+
+        $data = $chunksDat->getCompound("data");
+        if($data === null) {
+            return [];
+        }
+
+        $list = $data->getLongArray("Forced");
+        if($list === null) {
+            return [];
+        }
+
+        $data = $list->getRawValue();
+        $coordinates = [];
+        $currentCoordinate = [];
+        for($i = 0; $i < count($list)*2; $i++) {
+            $currentCoordinate[] = unpack("N", $data, $i*4)[1] << 32 >> 32;
+            if($i % 2 === 1) {
+                $coordinates[] = $currentCoordinate;
+                $currentCoordinate = [];
+            }
+        }
+        return $coordinates;
     }
 }
