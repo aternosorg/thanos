@@ -61,6 +61,11 @@ interface RegionDirectoryInterface extends Iterator
     public function saveAll(): void;
 
     /**
+     * @return int[][]
+     */
+    public function getForceLoadedChunks(): array;
+
+    /**
      * Check if a directory is a region directory
      *
      * @param string $path

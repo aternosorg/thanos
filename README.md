@@ -23,6 +23,7 @@ This library includes a simple cli tool.
 ```bash
 ./thanos.php /path/to/world/directory [/path/to/output/directory]
 ```
+Thanos uses [Taskmaster](https://github.com/aternosorg/taskmaster) for asynchronous tasks, which can be configured [using environment variables](https://github.com/aternosorg/taskmaster#defining-workers-using-environment-variables).
 
 ### Worlds
 

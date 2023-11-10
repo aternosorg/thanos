@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9445b63c71a6c40accbfbba71fc66e08",
+    "content-hash": "ad3a72a42b386d522ef2f0ac50e65b23",
     "packages": [
         {
             "name": "aternos/nbt",
@@ -50,6 +50,54 @@
                 "source": "https://github.com/aternosorg/php-nbt/tree/v1.9.0"
             },
             "time": "2023-05-04T17:55:22+00:00"
+        },
+        {
+            "name": "aternos/taskmaster",
+            "version": "v1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/aternosorg/taskmaster.git",
+                "reference": "39d8539fec92b60c8494cc4042d33fa26d4440cc"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/aternosorg/taskmaster/zipball/39d8539fec92b60c8494cc4042d33fa26d4440cc",
+                "reference": "39d8539fec92b60c8494cc4042d33fa26d4440cc",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.1"
+            },
+            "require-dev": {
+                "phpbench/phpbench": "^1.2",
+                "phpunit/phpunit": "^10.4"
+            },
+            "suggest": {
+                "ext-parallel": "Required for thread workers",
+                "ext-pcntl": "Required for fork workers"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Aternos\\Taskmaster\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Matthias Neid",
+                    "email": "matthias@aternos.org"
+                }
+            ],
+            "description": "Object-oriented PHP library for running tasks in parallel",
+            "support": {
+                "issues": "https://github.com/aternosorg/taskmaster/issues",
+                "source": "https://github.com/aternosorg/taskmaster/tree/v1.0.1"
+            },
+            "time": "2023-11-02T17:48:15+00:00"
         },
         {
             "name": "pocketmine/binaryutils",
@@ -105,5 +153,5 @@
         "ext-zlib": "*"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.3.0"
+    "plugin-api-version": "2.6.0"
 }

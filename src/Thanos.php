@@ -2,9 +2,9 @@
 
 namespace Aternos\Thanos;
 
-use Aternos\Nbt\Tag\CompoundTag;
-use Aternos\Nbt\Tag\LongArrayTag;
-use Aternos\Thanos\RegionDirectory\AnvilRegionDirectory;
+use Aternos\Taskmaster\Taskmaster;
+use Aternos\Thanos\Task\RegionTask;
+use Aternos\Thanos\Task\RegionTaskFactory;
 use Aternos\Thanos\World\AnvilWorld;
 use Exception;
 
@@ -21,7 +21,8 @@ class Thanos
      * @var int
      */
     protected int $minInhabitedTime = 0;
-
+    protected int $defaultWorkerCount = 16;
+    protected float $defaultTaskTimeout = 0;
     protected bool $removeUnknownChunks = false;
 
     /**
@@ -41,6 +42,22 @@ class Thanos
     }
 
     /**
+     * @param int $defaultWorkerCount
+     */
+    public function setDefaultWorkerCount(int $defaultWorkerCount): void
+    {
+        $this->defaultWorkerCount = $defaultWorkerCount;
+    }
+
+    /**
+     * @return int $defaultWorkerCount
+     */
+    public function getDefaultWorkerCount(): int
+    {
+        return $this->defaultWorkerCount;
+    }
+
+    /**
      * Remove all unused chunks
      *
      * @param AnvilWorld $world
@@ -52,61 +69,27 @@ class Thanos
         $world->copyOtherFiles();
         $removedChunks = 0;
 
-        foreach ($world->getRegionDirectories() as $regionDirectory) {
-            $forcedChunks = $this->getForceLoadedChunks($regionDirectory);
-            foreach ($regionDirectory as $chunk) {
-                if(in_array([$chunk->getGlobalXPos(), $chunk->getGlobalYPos()], $forcedChunks, true)) {
-                    $chunk->save();
-                    continue;
-                }
-                $time = $chunk->getInhabitedTime();
-                if ($time > $this->minInhabitedTime || ($time === -1 && !$this->removeUnknownChunks)) {
-                    $chunk->save();
-                } else {
-                    $removedChunks++;
-                }
+        $taskmaster = new Taskmaster();
+        $taskmaster->autoDetectWorkers($this->defaultWorkerCount);
+        $taskmaster->setDefaultTaskTimeout($this->getDefaultTaskTimeout());
+
+        $taskmaster->addTaskFactory(new RegionTaskFactory($world, $this->getMinInhabitedTime(), $this->getRemoveUnknownChunks()));
+
+        foreach ($taskmaster->waitAndHandleTasks() as $task) {
+            if (!$task instanceof RegionTask) {
+                continue;
             }
+            if ($task->getError()) {
+                $taskmaster->stop();
+                throw $task->getError();
+            }
+
+            $removedChunks += $task->getResult();
         }
+
+        $taskmaster->stop();
 
         return $removedChunks;
-    }
-
-    /**
-     * Get all force-loaded chunks
-     * If a chunk was manually loaded, it should not be removed
-     *
-     * @param AnvilRegionDirectory $regionDirectory
-     * @return array
-     * @throws Exception
-     */
-    protected function getForceLoadedChunks(AnvilRegionDirectory $regionDirectory): array
-    {
-        $chunksDat = $regionDirectory->readDataFile("chunks.dat");
-        if(!$chunksDat instanceof CompoundTag) {
-            return [];
-        }
-
-        $data = $chunksDat->getCompound("data");
-        if($data === null) {
-            return [];
-        }
-
-        $list = $data->getLongArray("Forced");
-        if($list === null) {
-            return [];
-        }
-
-        $data = $list->getRawValue();
-        $coordinates = [];
-        $currentCoordinate = [];
-        for($i = 0; $i < count($list)*2; $i++) {
-            $currentCoordinate[] = unpack("N", $data, $i*4)[1] << 32 >> 32;
-            if($i % 2 === 1) {
-                $coordinates[] = $currentCoordinate;
-                $currentCoordinate = [];
-            }
-        }
-        return $coordinates;
     }
 
     /**
@@ -120,8 +103,25 @@ class Thanos
     /**
      * @return bool
      */
-    public function isRemoveUnknownChunks(): bool
+    public function getRemoveUnknownChunks(): bool
     {
         return $this->removeUnknownChunks;
+    }
+
+    /**
+     * @return float
+     */
+    public function getDefaultTaskTimeout(): float
+    {
+        return $this->defaultTaskTimeout;
+    }
+
+    /**
+     * @param float $defaultTaskTimeout
+     * @return void
+     */
+    public function setDefaultTaskTimeout(float $defaultTaskTimeout): void
+    {
+        $this->defaultTaskTimeout = $defaultTaskTimeout;
     }
 }
