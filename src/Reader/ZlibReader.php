@@ -141,6 +141,17 @@ class ZlibReader implements ReaderInterface
         $this->pointer = 0;
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function reset(): void
+    {
+        $this->data = '';
+        $this->pointer = 0;
+        $this->resourcePointer = $this->offset;
+        $this->inflateContext = inflate_init($this->compression);
+    }
+
     public function eof(): bool
     {
         return ($this->resourcePointer >= $this->offset + $this->length || feof($this->resource))

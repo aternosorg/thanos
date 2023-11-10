@@ -42,6 +42,7 @@ class RegionTask extends Task
             } else {
                 $removedChunks++;
             }
+            $chunk->close();
         }
         $region->save();
         return $removedChunks;

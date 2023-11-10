@@ -340,4 +340,12 @@ class AnvilChunk implements ChunkInterface
     {
         return $this->regionPosition[1] * 32 +  $this->yPos;
     }
+
+    /**
+     * @return void
+     */
+    public function close(): void
+    {
+        $this->zlibReader->reset();
+    }
 }
