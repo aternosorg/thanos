@@ -21,7 +21,7 @@ class Thanos
      * @var int
      */
     protected int $minInhabitedTime = 0;
-    protected int $defaultWorkerCount = 16;
+    protected int $defaultWorkerCount = 8;
     protected float $defaultTaskTimeout = 0;
     protected bool $removeUnknownChunks = false;
 
