@@ -14,6 +14,8 @@ Currently, only the Minecraft Anvil world format (Minecraft Java Edition) is sup
 composer require aternos/thanos
 ```
 
+To work with LZ4 compressed chunks (Minecraft 1.20.5+), you should also install the [PHP LZ4 extension](https://github.com/kjdev/php-ext-lz4).
+
 ## Usage
 
 ### CLI tool

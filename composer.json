@@ -15,6 +15,9 @@
     "aternos/nbt": "^v1.9.0",
     "aternos/taskmaster": "^1.0"
   },
+  "suggest": {
+    "ext-lz4": "Support for LZ4 compressed chunks (Minecraft 1.20.5+)"
+  },
   "autoload": {
     "psr-4": {
       "Aternos\\Thanos\\": "src/"
