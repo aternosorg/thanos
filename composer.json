@@ -13,7 +13,7 @@
     "php": ">=8.1",
     "ext-zlib": "*",
     "aternos/nbt": "^v1.9.0",
-    "aternos/taskmaster": "^1.0"
+    "aternos/taskmaster": "^1.1.2"
   },
   "suggest": {
     "ext-lz4": "Support for LZ4 compressed chunks (Minecraft 1.20.5+)"
