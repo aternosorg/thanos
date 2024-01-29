@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "df6e8ac4a0ea62de1f728dd2679871fc",
+    "content-hash": "5298a03f558d69e4f5eda0ed3927373f",
     "packages": [
         {
             "name": "aternos/nbt",
@@ -53,16 +53,16 @@
         },
         {
             "name": "aternos/taskmaster",
-            "version": "v1.1.2",
+            "version": "v1.1.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aternosorg/taskmaster.git",
-                "reference": "d12f73eaf106d71f8ddfa0fc7170b9d07934e282"
+                "reference": "f89230a59dadad473dc9ce04ea9ef051d121f356"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aternosorg/taskmaster/zipball/d12f73eaf106d71f8ddfa0fc7170b9d07934e282",
-                "reference": "d12f73eaf106d71f8ddfa0fc7170b9d07934e282",
+                "url": "https://api.github.com/repos/aternosorg/taskmaster/zipball/f89230a59dadad473dc9ce04ea9ef051d121f356",
+                "reference": "f89230a59dadad473dc9ce04ea9ef051d121f356",
                 "shasum": ""
             },
             "require": {
@@ -95,9 +95,9 @@
             "description": "Object-oriented PHP library for running tasks in parallel",
             "support": {
                 "issues": "https://github.com/aternosorg/taskmaster/issues",
-                "source": "https://github.com/aternosorg/taskmaster/tree/v1.1.2"
+                "source": "https://github.com/aternosorg/taskmaster/tree/v1.1.3"
             },
-            "time": "2024-01-26T14:30:21+00:00"
+            "time": "2024-01-29T10:38:34+00:00"
         },
         {
             "name": "pocketmine/binaryutils",
