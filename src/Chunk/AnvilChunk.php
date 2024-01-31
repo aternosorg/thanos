@@ -2,6 +2,7 @@
 
 namespace Aternos\Thanos\Chunk;
 
+use Aternos\Thanos\Reader\CustomCompressionReader;
 use Aternos\Thanos\Reader\LZ4BlockReader;
 use Aternos\Thanos\Reader\RawReader;
 use Aternos\Thanos\Reader\ReaderInterface;
@@ -137,6 +138,13 @@ class AnvilChunk implements ChunkInterface
                 break;
             case 4:
                 $this->reader = new LZ4BlockReader(
+                    $this->file,
+                    $this->dataOffset,
+                    $dataLength
+                );
+                break;
+            case 127:
+                $this->reader = new CustomCompressionReader(
                     $this->file,
                     $this->dataOffset,
                     $dataLength
