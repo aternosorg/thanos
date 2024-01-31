@@ -2,7 +2,6 @@
 
 namespace Aternos\Thanos\Chunk;
 
-use Aternos\Thanos\Reader\CustomCompressionReader;
 use Aternos\Thanos\Reader\LZ4BlockReader;
 use Aternos\Thanos\Reader\RawReader;
 use Aternos\Thanos\Reader\ReaderInterface;
@@ -37,6 +36,11 @@ class AnvilChunk implements ChunkInterface
      * @var int
      */
     protected int $length;
+
+    /**
+     * @var int
+     */
+    protected int $dataLength;
 
     /**
      * @var int
@@ -111,48 +115,51 @@ class AnvilChunk implements ChunkInterface
 
         $this->readHeader();
 
-        $dataLength = $this->length - 5;
-        switch ($this->compression) {
-            case 1:
-                $this->reader = new ZlibReader(
-                    $this->file,
-                    ZLIB_ENCODING_GZIP,
-                    $this->dataOffset,
-                    $dataLength
-                );
-                break;
-            case 2:
-                $this->reader = new ZlibReader(
-                    $this->file,
-                    ZLIB_ENCODING_DEFLATE,
-                    $this->dataOffset,
-                    $dataLength
-                );
-                break;
-            case 3:
-                $this->reader = new RawReader(
-                    $this->file,
-                    $this->dataOffset,
-                    $dataLength
-                );
-                break;
-            case 4:
-                $this->reader = new LZ4BlockReader(
-                    $this->file,
-                    $this->dataOffset,
-                    $dataLength
-                );
-                break;
-            case 127:
-                $this->reader = new CustomCompressionReader(
-                    $this->file,
-                    $this->dataOffset,
-                    $dataLength
-                );
-                break;
-            default:
-                throw new Exception("Unknown chunk compression type.");
-        }
+        $this->reader = $this->createReader();
+    }
+
+    /**
+     * @return ReaderInterface
+     * @throws Exception
+     */
+    protected function createReader(): ReaderInterface
+    {
+        return match ($this->compression) {
+            1 => new ZlibReader(
+                $this->file,
+                ZLIB_ENCODING_GZIP,
+                $this->dataOffset,
+                $this->dataLength
+            ),
+            2 => new ZlibReader(
+                $this->file,
+                ZLIB_ENCODING_DEFLATE,
+                $this->dataOffset,
+                $this->dataLength
+            ),
+            3 => new RawReader(
+                $this->file,
+                $this->dataOffset,
+                $this->dataLength
+            ),
+            4 => new LZ4BlockReader(
+                $this->file,
+                $this->dataOffset,
+                $this->dataLength
+            ),
+            127 => $this->getCustomReader($this->readCustomCompressionName()),
+            default => throw new Exception("Unknown chunk compression type."),
+        };
+    }
+
+    /**
+     * @param string $name
+     * @return ReaderInterface
+     * @throws Exception
+     */
+    protected function getCustomReader(string $name): ReaderInterface
+    {
+        throw new Exception("Unsupported custom compression type: " . $name);
     }
 
     /**
@@ -167,12 +174,26 @@ class AnvilChunk implements ChunkInterface
             throw new Exception("Failed to read chunk length.");
         }
         $this->length = $rawValue['1'] + 4;
+        $this->dataLength = $this->length - 5;
 
         $rawValue = unpack('C', fread($this->file, 1));
         if ($rawValue === false) {
             throw new Exception("Failed to read chunk compression.");
         }
         $this->compression = $rawValue['1'];
+    }
+
+    /**
+     * @return string
+     * @throws Exception
+     */
+    protected function readCustomCompressionName(): string
+    {
+        $name = stream_get_line($this->file, $this->dataLength, "\x00");
+        if ($name === false) {
+            throw new Exception("Failed to read custom compression name.");
+        }
+        return $name;
     }
 
     /**
