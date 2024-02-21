@@ -28,8 +28,15 @@ This library includes a simple cli tool.
 Thanos uses [Taskmaster](https://github.com/aternosorg/taskmaster) for asynchronous tasks, which can be configured [using environment variables](https://github.com/aternosorg/taskmaster#defining-workers-using-environment-variables).
 
 ### Windows support
+
 While Thanos will generally work on Windows, it will be much slower since asynchronous tasks are not supported.
 It is therefore recommended to use the [Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/install) to run Thanos on Windows.
+
+### Known issues
+
+World features like trees that cross chunk borders can sometimes look cut off,
+if the chunk containing half of the feature is removed while the other half is not.
+Details can be found in this issue: https://github.com/aternosorg/thanos/issues/20
 
 ### Worlds
 
