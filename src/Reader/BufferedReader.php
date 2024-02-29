@@ -96,15 +96,18 @@ abstract class BufferedReader implements ReaderInterface
             return '';
         }
         fseek($this->resource, $this->resourcePointer);
-        $rawData = fread(
-            $this->resource,
-            min(
-                $length,
-                $this->getRemainingRawLength()
-            )
+        $readLength = min(
+            $length,
+            $this->getRemainingRawLength()
         );
+
+        $rawData = fread($this->resource, $readLength);
         if($rawData === false) {
             throw new Exception("Failed to read compressed input data.");
+        }
+
+        if (strlen($rawData) < $readLength && feof($this->resource)) {
+            throw new Exception("Reached end of file while reading compressed input data.");
         }
 
         $this->resourcePointer = ftell($this->resource) ?: $this->resourcePointer + strlen($rawData);
