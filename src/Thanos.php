@@ -18,8 +18,9 @@ class Thanos
 {
 
     /**
-     * @var int
+     * @var int[][]
      */
+    protected array $saveChunks = [];
     protected int $minInhabitedTime = 0;
     protected int $defaultWorkerCount = 8;
     protected float $defaultTaskTimeout = 0;
@@ -73,7 +74,7 @@ class Thanos
         $taskmaster->autoDetectWorkers($this->defaultWorkerCount);
         $taskmaster->setDefaultTaskTimeout($this->getDefaultTaskTimeout());
 
-        $taskmaster->addTaskFactory(new RegionTaskFactory($world, $this->getMinInhabitedTime(), $this->getRemoveUnknownChunks()));
+        $taskmaster->addTaskFactory(new RegionTaskFactory($world, $this->getMinInhabitedTime(), $this->getRemoveUnknownChunks(), $this->getSaveChunks()));
 
         foreach ($taskmaster->waitAndHandleTasks() as $task) {
             if (!$task instanceof RegionTask) {
@@ -123,5 +124,22 @@ class Thanos
     public function setDefaultTaskTimeout(float $defaultTaskTimeout): void
     {
         $this->defaultTaskTimeout = $defaultTaskTimeout;
+    }
+
+    /**
+     * @param int[][] $saveChunks
+     * @return void
+     */
+    public function setSaveChunks(array $saveChunks): void
+    {
+        $this->saveChunks = $saveChunks;
+    }
+
+    /**
+     * @return int[][]
+     */
+    public function getSaveChunks(): array
+    {
+        return $this->saveChunks;
     }
 }

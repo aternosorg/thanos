@@ -14,7 +14,12 @@ class RegionTaskFactory extends TaskFactory
     public function __construct(
         protected AnvilWorld $world,
         protected int $inhabitedTimeThreshold,
-        protected bool $removeUnknownChunks
+        protected bool $removeUnknownChunks,
+
+        /**
+         * @var int[][]
+         */
+        protected array $saveChunks = []
     )
     {
         $this->taskGenerator = $this->generateTasks();
@@ -26,7 +31,9 @@ class RegionTaskFactory extends TaskFactory
     protected function generateTasks(): Generator
     {
         foreach ($this->world->getRegionDirectories() as $regionDirectory) {
-            $forcedChunks = $regionDirectory->getForceLoadedChunks();
+            $forcedChunks = [];
+            array_push($forcedChunks, ...$this->saveChunks);
+            array_push($forcedChunks, ...$regionDirectory->getForceLoadedChunks());
 
             foreach ($regionDirectory->getRegionFiles() as $file) {
                 yield new RegionTask(
