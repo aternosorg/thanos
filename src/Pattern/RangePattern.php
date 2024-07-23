@@ -5,7 +5,7 @@ namespace Aternos\Thanos\Pattern;
 use Aternos\Thanos\Chunk\ChunkInterface;
 use Aternos\Thanos\Pattern\ChunkPatternInterface;
 
-class RegionPattern implements ChunkPatternInterface
+class RangePattern implements ChunkPatternInterface
 {
     protected int $startX;
     protected int $startY;
