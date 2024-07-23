@@ -76,4 +76,14 @@ interface ChunkInterface
      * @return void
      */
     public function close(): void;
+
+    /**
+     * @return int
+     */
+    public function getGlobalXPos(): int;
+
+    /**
+     * @return int
+     */
+    public function getGlobalYPos(): int;
 }

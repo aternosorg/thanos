@@ -4,6 +4,8 @@ namespace Aternos\Thanos\Task;
 
 use Aternos\Taskmaster\Task\TaskFactory;
 use Aternos\Taskmaster\Task\TaskInterface;
+use Aternos\Thanos\Pattern\ChunkPatternInterface;
+use Aternos\Thanos\Pattern\ListPattern;
 use Aternos\Thanos\World\AnvilWorld;
 use Generator;
 
@@ -13,13 +15,11 @@ class RegionTaskFactory extends TaskFactory
 
     public function __construct(
         protected AnvilWorld $world,
-        protected int $inhabitedTimeThreshold,
-        protected bool $removeUnknownChunks,
 
         /**
-         * @var int[][]
+         * @var ChunkPatternInterface[]
          */
-        protected array $saveChunks = []
+        protected array $pattern = []
     )
     {
         $this->taskGenerator = $this->generateTasks();
@@ -31,17 +31,14 @@ class RegionTaskFactory extends TaskFactory
     protected function generateTasks(): Generator
     {
         foreach ($this->world->getRegionDirectories() as $regionDirectory) {
-            $forcedChunks = [];
-            array_push($forcedChunks, ...$this->saveChunks);
-            array_push($forcedChunks, ...$regionDirectory->getForceLoadedChunks());
+            $pattern = $this->pattern;
+            array_unshift($pattern, new ListPattern($regionDirectory->getForceLoadedChunks()));
 
             foreach ($regionDirectory->getRegionFiles() as $file) {
                 yield new RegionTask(
                     $regionDirectory->getPath() . DIRECTORY_SEPARATOR . $file,
                     $regionDirectory->getDestination() . DIRECTORY_SEPARATOR . $file,
-                    $this->inhabitedTimeThreshold,
-                    $this->removeUnknownChunks,
-                    $forcedChunks
+                    $pattern
                 );
             }
         }

@@ -4,6 +4,7 @@ namespace Aternos\Thanos\Task;
 
 use Aternos\Taskmaster\Task\OnChild;
 use Aternos\Taskmaster\Task\Task;
+use Aternos\Thanos\Pattern\ChunkPatternInterface;
 use Aternos\Thanos\Region\AnvilRegion;
 use Exception;
 
@@ -12,13 +13,11 @@ class RegionTask extends Task
     public function __construct(
         #[OnChild] protected string $inputFile,
         #[OnChild] protected string $outputFile,
-        #[OnChild] protected int    $inhabitedTimeThreshold,
-        #[OnChild] protected bool   $removeUnknownChunks,
 
         /**
-         * @var int[][]
+         * @var ChunkPatternInterface[]
          */
-        #[OnChild] protected array  $forceLoadedChunks,
+        #[OnChild] protected array $pattern = []
     )
     {
     }
@@ -32,16 +31,14 @@ class RegionTask extends Task
         $removedChunks = 0;
         $region = new AnvilRegion($this->inputFile, $this->outputFile);
         foreach ($region->getChunks() as $chunk) {
-            if (in_array([$chunk->getGlobalXPos(), $chunk->getGlobalYPos()], $this->forceLoadedChunks, true)) {
-                $chunk->save();
-                continue;
+            foreach ($this->pattern as $pattern) {
+                if ($pattern->matches($chunk)) {
+                    $chunk->save();
+                    $chunk->close();
+                    continue 2;
+                }
             }
-            $time = $chunk->getInhabitedTime();
-            if ($time > $this->inhabitedTimeThreshold || ($time === -1 && !$this->removeUnknownChunks)) {
-                $chunk->save();
-            } else {
-                $removedChunks++;
-            }
+            $removedChunks++;
             $chunk->close();
         }
         $region->save();

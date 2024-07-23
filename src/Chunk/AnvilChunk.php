@@ -389,7 +389,7 @@ class AnvilChunk implements ChunkInterface
     }
 
     /**
-     * @return int
+     * @inheritDoc
      */
     public function getGlobalXPos(): int
     {
@@ -397,7 +397,7 @@ class AnvilChunk implements ChunkInterface
     }
 
     /**
-     * @return int
+     * @inheritDoc
      */
     public function getGlobalYPos(): int
     {

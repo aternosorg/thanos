@@ -3,6 +3,8 @@
 namespace Aternos\Thanos;
 
 use Aternos\Taskmaster\Taskmaster;
+use Aternos\Thanos\Pattern\ChunkPatternInterface;
+use Aternos\Thanos\Pattern\InhabitedTimePattern;
 use Aternos\Thanos\Task\RegionTask;
 use Aternos\Thanos\Task\RegionTaskFactory;
 use Aternos\Thanos\World\AnvilWorld;
@@ -16,22 +18,26 @@ use Exception;
  */
 class Thanos
 {
-
-    /**
-     * @var int[][]
-     */
-    protected array $saveChunks = [];
-    protected int $minInhabitedTime = 0;
     protected int $defaultWorkerCount = 8;
     protected float $defaultTaskTimeout = 0;
-    protected bool $removeUnknownChunks = false;
+    protected InhabitedTimePattern $inhabitedTimePattern;
+
+    /**
+     * @var ChunkPatternInterface[]
+     */
+    protected array $customPatterns = [];
+
+    public function __construct()
+    {
+        $this->inhabitedTimePattern = new InhabitedTimePattern(0, false);
+    }
 
     /**
      * @param int $minInhabitedTime
      */
     public function setMinInhabitedTime(int $minInhabitedTime): void
     {
-        $this->minInhabitedTime = $minInhabitedTime;
+        $this->inhabitedTimePattern->setInhabitedTimeThreshold($minInhabitedTime);
     }
 
     /**
@@ -39,7 +45,7 @@ class Thanos
      */
     public function getMinInhabitedTime(): int
     {
-        return $this->minInhabitedTime;
+        return $this->inhabitedTimePattern->getInhabitedTimeThreshold();
     }
 
     /**
@@ -74,7 +80,8 @@ class Thanos
         $taskmaster->autoDetectWorkers($this->defaultWorkerCount);
         $taskmaster->setDefaultTaskTimeout($this->getDefaultTaskTimeout());
 
-        $taskmaster->addTaskFactory(new RegionTaskFactory($world, $this->getMinInhabitedTime(), $this->getRemoveUnknownChunks(), $this->getSaveChunks()));
+        $pattern = [...$this->getCustomPatterns(), $this->inhabitedTimePattern];
+        $taskmaster->addTaskFactory(new RegionTaskFactory($world, $pattern));
 
         foreach ($taskmaster->waitAndHandleTasks() as $task) {
             if (!$task instanceof RegionTask) {
@@ -98,7 +105,7 @@ class Thanos
      */
     public function setRemoveUnknownChunks(bool $removeUnknownChunks): void
     {
-        $this->removeUnknownChunks = $removeUnknownChunks;
+        $this->inhabitedTimePattern->setRemoveUnknownChunks($removeUnknownChunks);
     }
 
     /**
@@ -106,7 +113,7 @@ class Thanos
      */
     public function getRemoveUnknownChunks(): bool
     {
-        return $this->removeUnknownChunks;
+        return $this->inhabitedTimePattern->getRemoveUnknownChunks();
     }
 
     /**
@@ -127,19 +134,19 @@ class Thanos
     }
 
     /**
-     * @param int[][] $saveChunks
+     * @param ChunkPatternInterface[] $customPatterns
      * @return void
      */
-    public function setSaveChunks(array $saveChunks): void
+    public function setCustomPatterns(array $customPatterns): void
     {
-        $this->saveChunks = $saveChunks;
+        $this->customPatterns = $customPatterns;
     }
 
     /**
-     * @return int[][]
+     * @return ChunkPatternInterface[]
      */
-    public function getSaveChunks(): array
+    public function getCustomPatterns(): array
     {
-        return $this->saveChunks;
+        return $this->customPatterns;
     }
 }
