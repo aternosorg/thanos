@@ -5,7 +5,9 @@ namespace Aternos\Thanos\RegionDirectory;
 use Aternos\Nbt\IO\Reader\GZipCompressedStringReader;
 use Aternos\Nbt\NbtFormat;
 use Aternos\Nbt\Tag\CompoundTag;
+use Aternos\Nbt\Tag\LongArrayTag;
 use Aternos\Nbt\Tag\Tag;
+use Aternos\Nbt\Tag\TagType;
 use Aternos\Thanos\Chunk\AnvilChunk;
 use Exception;
 use Aternos\Thanos\Helper;
@@ -364,11 +366,34 @@ class AnvilRegionDirectory implements RegionDirectoryInterface
             return [];
         }
 
+        $coordinates = [];
         $list = $data->getLongArray("Forced");
-        if($list === null) {
-            return [];
+        if($list !== null) {
+            $coordinates = $this->parseLegacyForgeLoadedChunks($list);
         }
 
+        $tickets = $data->getList("tickets", TagType::TAG_Compound);
+        if ($tickets === null) {
+            return $coordinates;
+        }
+
+        /** @var CompoundTag $ticket */
+        foreach ($tickets as $ticket) {
+            if ($ticket->getString("type")?->getValue() !== "minecraft:forced") {
+                continue;
+            }
+            $position = $ticket->getIntArray("chunk_pos");
+            if ($position === null || count($position) !== 2) {
+                continue;
+            }
+            $coordinates[] = [$position[0], $position[1]];
+        }
+
+        return $coordinates;
+    }
+
+    protected function parseLegacyForgeLoadedChunks(LongArrayTag $list): array
+    {
         $data = $list->getRawValue();
         $coordinates = [];
         $currentCoordinate = [];
