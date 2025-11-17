@@ -2,6 +2,7 @@
 
 namespace Aternos\Thanos\Tests;
 
+use Aternos\IO\System\Directory\Directory;
 use Aternos\IO\System\File\TempMemoryFile;
 use Aternos\Thanos\Mca\Compression\LZ4\LZ4BlockHeader;
 use Aternos\Thanos\Mca\Compression\LZ4\LZ4CompressionMethod;
@@ -10,6 +11,24 @@ use PHPUnit\Framework\TestCase;
 
 class ThanosTestCase extends TestCase
 {
+    const string TEST_WORLD = __DIR__ . "/Fixtures/world";
+    const string TEST_REGION = self::TEST_WORLD . "/region/r.0.0.mca";
+    const string TEST_ENTITIES = self::TEST_WORLD . "/entities/r.0.0.mca";
+    const string TEST_POI = self::TEST_WORLD . "/poi/r.0.0.mca";
+    const string TEST_DATA = __DIR__ . "/data/";
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        mkdir(static::TEST_DATA);
+    }
+
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+        new Directory(static::TEST_DATA)->delete();
+    }
+
     protected function getDataFile(string $data, ?TempMemoryFile $file = null): TempMemoryFile
     {
         $file ??= new TempMemoryFile();

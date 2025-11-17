@@ -89,6 +89,21 @@ class McaWriterTest extends ThanosTestCase
         $this->assertTrue(true);
     }
 
+    public function testSetAllowOverride(): void
+    {
+        $rawEntry = $this->makeEntry("test");
+        $data = $this->getDataFile($rawEntry);
+        $entry = new McaEntry($data, 0, 4096, 123, 45678);
+
+        $output = new TempMemoryFile();
+        $writer = new McaWriter($output);
+        $writer->setAllowEntryOverwrite(true);
+        $writer->writeEntry($entry);
+        // Should not throw exception
+        $writer->writeEntry($entry);
+        $this->assertTrue(true);
+    }
+
     public function testSetPositionError(): void
     {
         $mock = $this->createPartialMock(TempMemoryFile::class, ["setPosition"]);
@@ -183,10 +198,20 @@ class McaWriterTest extends ThanosTestCase
             ->method("setPosition")
             ->willThrowException(new IOException("IO error"));
 
-        $writer = new McaWriter($mock);
+        $writer = new McaWriter($mock, writeEmptyFile: true);
         $this->expectExceptionMessage("Could not seek to entry position in output file");
         $this->expectException(McaFileException::class);
         $writer->finalize();
+    }
+
+    public function testSkipFinalizeIfAlreadyFinalized(): void
+    {
+        $file = new TempMemoryFile();
+        $writer = new McaWriter($file, writeEmptyFile: false);
+        $writer->finalize();
+
+        $this->assertEquals(0, $file->getPosition());
+        $this->assertEquals(0, $file->getSize());
     }
 
     public function testFinalizeWriteError(): void
@@ -196,7 +221,7 @@ class McaWriterTest extends ThanosTestCase
             ->method("write")
             ->willThrowException(new IOException("IO error"));
 
-        $writer = new McaWriter($mock);
+        $writer = new McaWriter($mock, writeEmptyFile: true);
         $this->expectExceptionMessage("Could not write MCA header to output file");
         $this->expectException(McaFileException::class);
         $writer->finalize();
@@ -248,5 +273,14 @@ class McaWriterTest extends ThanosTestCase
         $this->expectException(McaFileException::class);
         $this->expectExceptionMessage("Could not close output file");
         $reader->close();
+    }
+
+    public function testOpen(): void
+    {
+        $writer = McaWriter::open(static::TEST_DATA . "/test.mca");
+        $reflection = new ReflectionClass($writer);
+        $output = $reflection->getProperty("output")->getValue($writer);
+        $this->assertInstanceOf(File::class, $output);
+        $this->assertEquals(static::TEST_DATA . "/test.mca", $output->getPath());
     }
 }

@@ -20,6 +20,12 @@ interface McaEntryInterface
     public function getSerializedData(): Generator;
 
     /**
+     * @return string
+     * @throws McaExceptionInterface
+     */
+    public function getAllData(): string;
+
+    /**
      * @return int
      */
     public function getModifiedTime(): int;

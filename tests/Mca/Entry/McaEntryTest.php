@@ -12,6 +12,7 @@ use Aternos\Thanos\Mca\Compression\ZLibMcaDataReader;
 use Aternos\Thanos\Mca\Entry\CompressionMethod;
 use Aternos\Thanos\Mca\Entry\EntryHeader;
 use Aternos\Thanos\Mca\Entry\McaEntry;
+use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\TestWith;
 use ReflectionClass;
 
@@ -80,6 +81,16 @@ class McaEntryTest extends McaEntryTestCase
         foreach ($entry->getData() as $chunk) {
             $result .= $chunk;
         }
+
+        $this->assertEquals("data", $result);
+    }
+
+    public function testGetAllData(): void
+    {
+        $data = $this->getDataFile($this->makeEntryHeader(5, CompressionMethod::RAW) . "data");
+        $entry = new McaEntry($data, 0, 4096, 0, 0);
+
+        $result = $entry->getAllData();
 
         $this->assertEquals("data", $result);
     }
@@ -171,5 +182,21 @@ class McaEntryTest extends McaEntryTestCase
         $this->assertEquals(2, $entry->getRegionIndex());
         $this->assertEquals(2, $entry->getXPos());
         $this->assertEquals(0, $entry->getZPos());
+    }
+
+    public function testSetReadChunkSize(): void
+    {
+        $data = $this->getDataFile("");
+        $entry = new McaEntry($data, 1234, 4096, 2, 3);
+
+        $reflection = new ReflectionClass($entry);
+        $property = $reflection->getProperty("readChunkSize");
+
+        $entry->setReadChunkSize(8192);
+        $this->assertEquals(8192, $property->getValue($entry));
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Read chunk size must be greater than 1");
+        $entry->setReadChunkSize(0);
     }
 }

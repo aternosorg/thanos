@@ -13,12 +13,14 @@ use Aternos\Thanos\Mca\Compression\McaDataReaderInterface;
 use Aternos\Thanos\Mca\Compression\RawMcaDataReader;
 use Aternos\Thanos\Mca\Compression\ZLibMcaDataReader;
 use Generator;
+use InvalidArgumentException;
 
 class McaEntry implements McaEntryInterface
 {
-    protected const int CHUNK_SIZE = 16 * 1024;
+    protected const int DEFAULT_CHUNK_SIZE = 16 * 1024;
 
     protected ?EntryHeader $header = null;
+    protected int $readChunkSize = self::DEFAULT_CHUNK_SIZE;
 
     /**
      * @param ReadInterface&IsEndOfFileInterface&SetPositionInterface $input
@@ -67,21 +69,21 @@ class McaEntry implements McaEntryInterface
                 $this->input,
                 $startOffset,
                 $dataLength,
-                static::CHUNK_SIZE,
+                $this->readChunkSize,
                 ZLIB_ENCODING_GZIP
             ),
             CompressionMethod::ZLIB => new ZLibMcaDataReader(
                 $this->input,
                 $startOffset,
                 $dataLength,
-                static::CHUNK_SIZE,
+                $this->readChunkSize,
                 ZLIB_ENCODING_DEFLATE
             ),
             CompressionMethod::RAW => new RawMcaDataReader(
                 $this->input,
                 $startOffset,
                 $dataLength,
-                static::CHUNK_SIZE
+                $this->readChunkSize
             ),
             CompressionMethod::LZ4 => new LZ4BlockMcaDataReader(
                 $this->input,
@@ -127,7 +129,7 @@ class McaEntry implements McaEntryInterface
                 throw new McaFileException("Unexpected end of MCA file");
             }
 
-            $toRead = min(self::CHUNK_SIZE, $endOffset - $offset);
+            $toRead = min(self::DEFAULT_CHUNK_SIZE, $endOffset - $offset);
             try {
                 $data = $this->input->read($toRead);
             } catch (IOException $e) {
@@ -169,5 +171,30 @@ class McaEntry implements McaEntryInterface
     public function getZPos(): int
     {
         return intdiv($this->regionIndex, 32);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getAllData(): string
+    {
+        $data = "";
+        foreach ($this->getData() as $chunk) {
+            $data .= $chunk;
+        }
+        return $data;
+    }
+
+    /**
+     * @param int $readChunkSize
+     * @return $this
+     */
+    public function setReadChunkSize(int $readChunkSize): static
+    {
+        if ($readChunkSize <= 1) {
+            throw new InvalidArgumentException("Read chunk size must be greater than 1");
+        }
+        $this->readChunkSize = $readChunkSize;
+        return $this;
     }
 }

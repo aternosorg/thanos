@@ -6,6 +6,7 @@ use Aternos\IO\Exception\IOException;
 use Aternos\IO\Interfaces\Features\CloseInterface;
 use Aternos\IO\Interfaces\Features\SetPositionInterface;
 use Aternos\IO\Interfaces\Features\WriteInterface;
+use Aternos\IO\System\File\File;
 use Aternos\Thanos\Exception\McaExceptionInterface;
 use Aternos\Thanos\Exception\McaFileException;
 use Aternos\Thanos\Mca\Entry\McaEntryInterface;
@@ -20,17 +21,29 @@ class McaWriter
     protected bool $finalized = false;
 
     /**
+     * @param string $filePath
+     * @return static
+     */
+    public static function open(string $filePath): static
+    {
+        return new static(new File($filePath));
+    }
+
+    /**
      * @param WriteInterface&SetPositionInterface $output
      * @param bool $allowEntryOverwrite
+     * @param bool $writeEmptyFile
      */
     public function __construct(
         protected WriteInterface&SetPositionInterface $output,
         protected bool $allowEntryOverwrite = false,
+        bool $writeEmptyFile = false,
     )
     {
         $this->offsets = array_fill(0, 1024, 0);
         $this->sizes = array_fill(0, 1024, 0);
         $this->timestamps = array_fill(0, 1024, 0);
+        $this->finalized = !$writeEmptyFile;
     }
 
     /**
@@ -92,6 +105,10 @@ class McaWriter
      */
     public function finalize(): static
     {
+        if ($this->finalized) {
+            return $this;
+        }
+
         $locationTable = [];
         for ($i = 0; $i < 1024; $i++) {
             $offset = intdiv($this->offsets[$i], 4096);
@@ -135,6 +152,16 @@ class McaWriter
                 throw new McaFileException("Could not close output file", previous: $e);
             }
         }
+        return $this;
+    }
+
+    /**
+     * @param bool $allowEntryOverwrite
+     * @return $this
+     */
+    public function setAllowEntryOverwrite(bool $allowEntryOverwrite): static
+    {
+        $this->allowEntryOverwrite = $allowEntryOverwrite;
         return $this;
     }
 }

@@ -3,3 +3,4 @@ vendor/
 test.php
 .phpunit.cache
 v1/
+tests/data/

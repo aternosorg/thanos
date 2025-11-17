@@ -14,6 +14,8 @@ use Generator;
 
 class McaReader
 {
+    public const string MCA_FILE_PATTERN = "#r\.(-?\d+)\.(-?\d+)\.mca$#";
+
     protected ?array $offsets = null;
     protected ?array $sizes = null;
     protected ?array $timestamps = null;
@@ -25,7 +27,7 @@ class McaReader
      */
     public static function open(string $filePath): static
     {
-        preg_match("#r\.(-?\d+)\.(-?\d+)\.mca$#", $filePath, $matches);
+        preg_match(static::MCA_FILE_PATTERN, $filePath, $matches);
         if (!isset($matches[1]) || !isset($matches[2])) {
             throw new McaFileException("Unable to get region position from file name");
         }
@@ -72,7 +74,7 @@ class McaReader
     {
         $this->input->setPosition(0);
         $chunkData = $this->input->read(4 * 1024);
-        $values = unpack('N1024', $chunkData);
+        $values = @unpack('N1024', $chunkData);
         if ($values === false) {
             throw new McaFileException("Failed to decode chunk table");
         }
@@ -87,8 +89,8 @@ class McaReader
         }
 
         $timeData = $this->input->read(4 * 1024);
-        $values = unpack('N1024', $timeData);
-        if ($values === false) {
+        $values = @unpack('N1024', $timeData);
+        if ($values === false || count($values) !== 1024) {
             throw new McaFileException("Failed to decode timestamp table");
         }
 

@@ -10,8 +10,6 @@ use Aternos\Thanos\Tests\ThanosTestCase;
 
 class McaReaderTest extends ThanosTestCase
 {
-    const string TEST_REGION = __DIR__ . "/Fixtures/r.0.0.mca";
-
     public function testOpenFile(): void
     {
         $reader = McaReader::open(static::TEST_REGION);
