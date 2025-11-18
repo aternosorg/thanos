@@ -63,6 +63,8 @@ class Thanos
             $deletedChunks += $task->getResult();
         }
 
+        $taskmaster->stop();
+
         return $deletedChunks;
     }
 
