@@ -24,7 +24,7 @@ class CreateDirectoryTask extends ThanosTask
     public function run(): void
     {
         error_clear_last();
-        if (!is_dir($this->path) && !@mkdir($this->path, recursive: true)) {
+        if (!@mkdir($this->path, recursive: true) && !is_dir($this->path)) {
             $error = error_get_last();
             $message = "Unknown error";
             if ($error !== null && isset($error["message"])) {

@@ -8,11 +8,13 @@ use Aternos\IO\Interfaces\IOElementInterface;
 use Aternos\IO\Interfaces\Types\DirectoryInterface;
 use Aternos\IO\Interfaces\Types\FileInterface;
 use Aternos\Thanos\Mca\McaReader;
-use Aternos\Thanos\PathPair;
+use Aternos\Thanos\Pattern\ChunkPatternInterface;
+use Aternos\Thanos\Pattern\Factory\DimensionPatternFactoryInterface;
 use Aternos\Thanos\Task\CopyFileTask;
 use Aternos\Thanos\Task\CreateDirectoryTask;
 use Aternos\Thanos\Task\ProcessRegionTask;
 use Aternos\Thanos\Task\ThanosTask;
+use Aternos\Thanos\Util\PathPair;
 use Generator;
 
 class DimensionTaskGenerator
@@ -40,20 +42,21 @@ class DimensionTaskGenerator
     /**
      * @param GetPathInterface&DirectoryInterface $source
      * @param GetPathInterface&DirectoryInterface $target
+     * @param (ChunkPatternInterface|DimensionPatternFactoryInterface)[] $patterns
      */
     public function __construct(
         protected DirectoryInterface&GetPathInterface $source,
-        protected DirectoryInterface&GetPathInterface $target
+        protected DirectoryInterface&GetPathInterface $target,
+        protected array                               $patterns = [],
     )
     {
     }
 
     /**
-     * @param array $patterns
      * @return Generator
      * @throws IOException
      */
-    public function generateTasks(array $patterns): Generator
+    public function generateTasks(): Generator
     {
         yield new CreateDirectoryTask($this->target->getPath());
 
@@ -80,7 +83,7 @@ class DimensionTaskGenerator
                 /** @var DirectoryInterface&GetPathInterface $child */
                 /** @var DirectoryInterface&GetPathInterface $newTarget */
                 $newTarget = $this->target->getChild($child->getName(), DirectoryInterface::class, GetPathInterface::class);
-                yield from new DimensionTaskGenerator($child, $newTarget)->generateTasks($patterns);
+                yield from new DimensionTaskGenerator($child, $newTarget, $this->patterns)->generateTasks();
                 continue;
             }
 
@@ -91,7 +94,6 @@ class DimensionTaskGenerator
             $region,
             $entities,
             $poi,
-            $patterns
         );
     }
 
@@ -99,7 +101,6 @@ class DimensionTaskGenerator
      * @param (GetPathInterface&DirectoryInterface)|null $region
      * @param (GetPathInterface&DirectoryInterface)|null $entities
      * @param (GetPathInterface&DirectoryInterface)|null $poi
-     * @param array $patterns
      * @return Generator
      * @throws IOException
      */
@@ -107,9 +108,17 @@ class DimensionTaskGenerator
         (DirectoryInterface&GetPathInterface)|null $region,
         (DirectoryInterface&GetPathInterface)|null $entities,
         (DirectoryInterface&GetPathInterface)|null $poi,
-        array                                      $patterns
     ): Generator
     {
+        $patterns = [];
+        foreach ($this->patterns as $pattern) {
+            if ($pattern instanceof DimensionPatternFactoryInterface) {
+                $patterns[] = $pattern->makePattern($this);
+            } else {
+                $patterns[] = $pattern;
+            }
+        }
+
         $processedRegions = [];
         $processedEntities = [];
         $processedPoi = [];
@@ -250,5 +259,13 @@ class DimensionTaskGenerator
             }
             yield from $this->generateCopyTasks($child);
         }
+    }
+
+    /**
+     * @return GetPathInterface&DirectoryInterface
+     */
+    public function getSource(): GetPathInterface&DirectoryInterface
+    {
+        return $this->source;
     }
 }

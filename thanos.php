@@ -1,14 +1,15 @@
 #!/usr/bin/php
 <?php
 
-use Aternos\Thanos\Helper;
+use Aternos\Thanos\Pattern\Factory\ForceLoadedChunkPatternFactory;
+use Aternos\Thanos\Pattern\InhabitedTimePattern;
 use Aternos\Thanos\Thanos;
-use Aternos\Thanos\World\AnvilWorld;
+use Aternos\Thanos\World\World;
 
 require_once 'vendor/autoload.php';
 
 if (!isset($argv[1])) {
-    exit("Usage: cleanup.php <world> [<output>]\n");
+    exit("Usage: thanos.php <world> [<output>]\n");
 }
 
 $input = $argv[1];
@@ -36,17 +37,20 @@ if (!file_exists($output)) {
 
 
 $startTime = microtime(true);
-$world = new AnvilWorld($input, $output);
-$thanos = new Thanos();
-$thanos->setMinInhabitedTime(0);
-$removedChunks = $thanos->snap($world);
+$world = World::open($input);
+$destination = new \Aternos\IO\System\Directory\Directory($output);
+$thanos = new Thanos([
+        new ForceLoadedChunkPatternFactory(),
+        new InhabitedTimePattern(0, false),
+]);
+$removedChunks = $thanos->snap($world, $destination);
 if ($moveOutput) {
-    Helper::removeDirectory($input);
-    rename($output, $input);
+    $world->getSource()->delete();
+    $destination->move($world->getSource()->getPath());
 }
 
 echo sprintf('Removed %d chunks in %.2f seconds',
-    $removedChunks,
-    round(microtime(true) - $startTime, 2)
+        $removedChunks,
+        round(microtime(true) - $startTime, 2)
 );
 echo PHP_EOL;

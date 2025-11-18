@@ -4,7 +4,7 @@ namespace Aternos\Thanos\Task;
 
 use Aternos\Taskmaster\Task\OnChild;
 use Aternos\Thanos\Exception\FileSystemException;
-use Aternos\Thanos\PathPair;
+use Aternos\Thanos\Util\PathPair;
 
 class CopyFileTask extends ThanosTask
 {
@@ -26,7 +26,7 @@ class CopyFileTask extends ThanosTask
     {
         $baseDir = dirname($this->paths->getDestination());
         error_clear_last();
-        if (!is_dir($baseDir) && !@mkdir($baseDir, recursive: true)) {
+        if (!@mkdir($baseDir, recursive: true) && !is_dir($baseDir)) {
             $error = error_get_last();
             $message = "Unknown error";
             if ($error !== null && isset($error["message"])) {

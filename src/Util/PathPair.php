@@ -1,6 +1,6 @@
 <?php
 
-namespace Aternos\Thanos;
+namespace Aternos\Thanos\Util;
 
 class PathPair
 {

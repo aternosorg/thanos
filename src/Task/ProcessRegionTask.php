@@ -3,10 +3,13 @@
 namespace Aternos\Thanos\Task;
 
 use Aternos\Taskmaster\Task\OnChild;
+use Aternos\Thanos\Exception\FileSystemException;
+use Aternos\Thanos\Exception\McaExceptionInterface;
+use Aternos\Thanos\Exception\McaFileException;
 use Aternos\Thanos\Mca\McaReader;
 use Aternos\Thanos\Mca\McaWriter;
-use Aternos\Thanos\PathPair;
 use Aternos\Thanos\Pattern\ChunkPatternInterface;
+use Aternos\Thanos\Util\PathPair;
 use Aternos\Thanos\World\Chunk;
 
 class ProcessRegionTask extends ThanosTask
@@ -28,10 +31,14 @@ class ProcessRegionTask extends ThanosTask
 
     /**
      * @inheritDoc
+     * @throws FileSystemException
+     * @throws McaExceptionInterface
      */
     #[OnChild]
     public function run(): int
     {
+        $this->createBaseDirectories();
+
         $chunkReader = McaReader::open($this->chunkRegion->getSource());
         $chunkWriter = McaWriter::open($this->chunkRegion->getDestination());
 
@@ -93,5 +100,28 @@ class ProcessRegionTask extends ThanosTask
         $poiWriter?->close();
 
         return $removedChunks;
+    }
+
+    /**
+     * @return void
+     * @throws FileSystemException
+     */
+    protected function createBaseDirectories(): void
+    {
+        foreach ([$this->chunkRegion, $this->entityRegion, $this->poiRegion] as $region) {
+            if ($region === null) {
+                continue;
+            }
+            $baseDir = dirname($region->getDestination());
+            error_clear_last();
+            if (!@mkdir($baseDir, recursive: true) && !is_dir($baseDir)) {
+                $error = error_get_last();
+                $message = "Unknown error";
+                if ($error !== null && isset($error["message"])) {
+                    $message = $error["message"];
+                }
+                throw new FileSystemException("Failed to create base directory " . $baseDir . ": " . $message);
+            }
+        }
     }
 }

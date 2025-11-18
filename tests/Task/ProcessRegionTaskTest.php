@@ -2,12 +2,11 @@
 
 namespace Aternos\Thanos\Tests\Task;
 
-use Aternos\Thanos\Mca\McaReader;
-use Aternos\Thanos\PathPair;
+use Aternos\Thanos\Exception\FileSystemException;
 use Aternos\Thanos\Task\ProcessRegionTask;
 use Aternos\Thanos\Tests\TestPattern;
 use Aternos\Thanos\Tests\ThanosTestCase;
-use Aternos\Thanos\World\Chunk;
+use Aternos\Thanos\Util\PathPair;
 
 class ProcessRegionTaskTest extends ThanosTestCase
 {
@@ -107,5 +106,20 @@ class ProcessRegionTaskTest extends ThanosTestCase
         $this->assertFileExists($this->poiRegion->getDestination());
 
         $this->assertCount(650, $pattern->chunks);
+    }
+
+    public function testBaseDirectoryCreationError(): void
+    {
+        file_put_contents(dirname($this->chunkRegion->getDestination()), "This is a file, not a directory");
+        $pattern = new TestPattern();
+        $task = new ProcessRegionTask(
+            $this->chunkRegion,
+            $this->entityRegion,
+            $this->poiRegion,
+            [$pattern]
+        );
+
+        $this->expectException(FileSystemException::class);
+        $task->run();
     }
 }
