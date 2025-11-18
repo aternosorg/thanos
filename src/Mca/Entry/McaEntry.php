@@ -17,7 +17,7 @@ use InvalidArgumentException;
 
 class McaEntry implements McaEntryInterface
 {
-    protected const int DEFAULT_CHUNK_SIZE = 16 * 1024;
+    protected const int DEFAULT_CHUNK_SIZE = 2 * 1024;
 
     protected ?EntryHeader $header = null;
     protected int $readChunkSize = self::DEFAULT_CHUNK_SIZE;

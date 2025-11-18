@@ -128,7 +128,10 @@ class DimensionTaskGenerator
                     continue;
                 }
 
-                if (!$regionFile instanceof FileInterface || !preg_match(McaReader::MCA_FILE_PATTERN, $regionFile->getName())) {
+                if (!$regionFile instanceof FileInterface ||
+                    !preg_match(McaReader::MCA_FILE_PATTERN, $regionFile->getName()) ||
+                    $regionFile->getSize() === 0
+                ) {
                     continue;
                 }
 
