@@ -254,30 +254,19 @@ class AnvilChunk implements ChunkInterface
     ): ?string
     {
         $startPointer = $this->reader->tell();
-        $strPointer = 0;
+        $remainder = "";
         $valuePos = -1;
         while (
             !$this->reader->eof()
             && $this->reader->tell() < $startPointer + $limit
         ) {
-            $data = $this->reader->read(2048);
-            $dataStart = $this->reader->tell() - strlen($data);
+            $data = $remainder . $this->reader->read(2048);
             $pos = strpos($data, $str);
             if ($pos !== false) {
-                $valuePos = $dataStart + $pos + strlen($str);
+                $valuePos = $this->reader->tell() - strlen($data) + $pos + strlen($str);
                 break;
             }
-            for ($i = 0; $i < strlen($data); $i++) {
-                if ($data[$i] === $str[$strPointer]) {
-                    $strPointer++;
-                    if ($strPointer === strlen($str)) {
-                        $valuePos = $dataStart + $i;
-                        break 2;
-                    }
-                } else {
-                    $strPointer = 0;
-                }
-            }
+            $remainder = substr($data, -strlen($str) + 1);
         }
         if ($valuePos === -1) {
             return null;
