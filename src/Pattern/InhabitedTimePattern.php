@@ -26,6 +26,10 @@ class InhabitedTimePattern implements ChunkPatternInterface
      */
     public function matches(Chunk $chunk): bool
     {
+        if ($chunk->getChunkEntry()->isExternal()) {
+            return !$this->removeUnknownChunks;
+        }
+
         try {
             $tag = $chunk->findChunkTag(LongTag::class, "InhabitedTime", 8);
         } catch (McaExceptionInterface $e) {

@@ -199,4 +199,18 @@ class McaEntryTest extends McaEntryTestCase
         $this->expectExceptionMessage("Read chunk size must be greater than 1");
         $entry->setReadChunkSize(0);
     }
+
+    public function testExternalEntry(): void
+    {
+        $data = $this->getDataFile($this->makeEntryHeader(1, CompressionMethod::EXTERNAL_GZIP));
+        $entry = new McaEntry($data, 0, 4096, 0, 0);
+        $reflection = new ReflectionClass($entry);
+        $header = $reflection->getMethod("getHeader")->invoke($entry);
+
+        $this->assertTrue($entry->isExternal());
+
+        $this->expectException(UnsupportedFeatureException::class);
+        $this->expectExceptionMessage("Unsupported compression method EXTERNAL_GZIP");
+        $reflection->getMethod("getReader")->invoke($entry, $header);
+    }
 }

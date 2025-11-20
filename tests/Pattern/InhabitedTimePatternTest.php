@@ -8,6 +8,7 @@ use Aternos\Nbt\IO\Writer\StringWriter;
 use Aternos\Nbt\Tag\CompoundTag;
 use Aternos\Nbt\Tag\LongTag;
 use Aternos\Thanos\Exception\McaFileException;
+use Aternos\Thanos\Mca\Entry\CompressionMethod;
 use Aternos\Thanos\Mca\Entry\McaEntry;
 use Aternos\Thanos\Pattern\InhabitedTimePattern;
 use Aternos\Thanos\World\Chunk;
@@ -27,7 +28,7 @@ class InhabitedTimePatternTest extends PatternTestCase
         }
 
         $entryData = $this->getDataFile($this->makeEntry($nbtData));
-        $entry = new McaEntry($entryData, 0, 40964, 0, 0);
+        $entry = new McaEntry($entryData, 0, 4096, 0, 0);
         return new Chunk($entry, null, null, 0, 0);
     }
 
@@ -45,16 +46,18 @@ class InhabitedTimePatternTest extends PatternTestCase
 
     public function testChunkReadError(): void
     {
-        $entry = new McaEntry(new class extends TempMemoryFile {
-            protected bool $thowOnRead = true;
+        $file = $this->getDataFile($this->makeEntry("test"), new class extends TempMemoryFile {
+            protected int $read = 0;
             public function read(int $length): string
             {
-                if ($this->thowOnRead) {
+                if ($this->read++ === 1) {
                     throw new IOException("Simulated read error");
                 }
                 return parent::read($length);
             }
-        }, 0, 4096, 0, 0);
+        });
+
+        $entry = new McaEntry($file, 0, 4096, 0, 0);
         $chunk = new Chunk($entry, null, null, 0, 0);
         $pattern = new InhabitedTimePattern(10, false);
 
@@ -67,5 +70,18 @@ class InhabitedTimePatternTest extends PatternTestCase
     {
         $pattern = new InhabitedTimePattern(10, true);
         $this->assertFalse($pattern->matches($this->makeChunkWithInhabitedTime(null))); // No InhabitedTime tag
+    }
+
+    public function testExternalIsUnknown(): void
+    {
+        $entryData = $this->getDataFile($this->makeEntryHeader(1, CompressionMethod::EXTERNAL_GZIP));
+        $entry = new McaEntry($entryData, 0, 4096, 0, 0);
+        $chunk = new Chunk($entry, null, null, 0, 0);
+
+        $pattern = new InhabitedTimePattern(10, true);
+        $this->assertFalse($pattern->matches($chunk));
+
+        $pattern = new InhabitedTimePattern(10, false);
+        $this->assertTrue($pattern->matches($chunk));
     }
 }

@@ -64,7 +64,8 @@ class McaEntry implements McaEntryInterface
     {
         $startOffset = $this->startOffset + EntryHeader::HEADER_LENGTH;
         $dataLength = $header->getDataLength();
-        return match ($header->getCompressionMethod()) {
+        $compressionMethod = $header->getCompressionMethod();
+        return match ($compressionMethod) {
             CompressionMethod::GZIP => new ZLibMcaDataReader(
                 $this->input,
                 $startOffset,
@@ -91,6 +92,7 @@ class McaEntry implements McaEntryInterface
                 $dataLength
             ),
             CompressionMethod::CUSTOM => throw new UnsupportedFeatureException("Custom compression method '" . $header->getCustomCompressionMethod() . "' is not supported"),
+            default => throw new UnsupportedFeatureException("Unsupported compression method " . $compressionMethod->name),
         };
     }
 
@@ -196,5 +198,16 @@ class McaEntry implements McaEntryInterface
         }
         $this->readChunkSize = $readChunkSize;
         return $this;
+    }
+
+    /**
+     * @return bool
+     * @throws McaFileException
+     */
+    public function isExternal(): bool
+    {
+        return $this->getHeader()
+            ->getCompressionMethod()
+            ->isExternal();
     }
 }

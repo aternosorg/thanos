@@ -22,7 +22,7 @@ class EntryHeader
         } catch (IOException $e) {
             throw new McaFileException("Could not read entry header", previous: $e);
         }
-        $values = @unpack("Nlength/CcompressionMethod", $data);
+        $values = @unpack("Nlength/ccompressionMethod", $data);
         if ($values === false) {
             throw new McaFileException("Could not parse entry header");
         }
