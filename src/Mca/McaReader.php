@@ -4,6 +4,7 @@ namespace Aternos\Thanos\Mca;
 
 use Aternos\IO\Exception\IOException;
 use Aternos\IO\Interfaces\Features\CloseInterface;
+use Aternos\IO\Interfaces\Features\GetNameInterface;
 use Aternos\IO\Interfaces\Features\IsEndOfFileInterface;
 use Aternos\IO\Interfaces\Features\ReadInterface;
 use Aternos\IO\Interfaces\Features\SetPositionInterface;
@@ -29,7 +30,7 @@ class McaReader
     {
         preg_match(static::MCA_FILE_PATTERN, $filePath, $matches);
         if (!isset($matches[1]) || !isset($matches[2])) {
-            throw new McaFileException("Unable to get region position from file name");
+            throw new McaFileException("Unable to get region position from file name " . basename($filePath));
         }
 
         $file = new File($filePath);
@@ -47,6 +48,20 @@ class McaReader
         protected int                                                     $zPosition,
     )
     {
+    }
+
+    /**
+     * @return string
+     */
+    protected function getFilename(): string
+    {
+        if ($this->input instanceof GetNameInterface) {
+            try {
+                return $this->input->getName();
+            } catch (IOException) {
+            }
+        }
+        return "Unknown MCA file";
     }
 
     /**
@@ -76,7 +91,7 @@ class McaReader
         $chunkData = $this->input->read(4 * 1024);
         $values = @unpack('N1024', $chunkData);
         if ($values === false) {
-            throw new McaFileException("Failed to decode chunk table");
+            throw new McaFileException("Failed to decode chunk table in " . $this->getFilename());
         }
 
         $offsets = [];
@@ -91,7 +106,7 @@ class McaReader
         $timeData = $this->input->read(4 * 1024);
         $values = @unpack('N1024', $timeData);
         if ($values === false || count($values) !== 1024) {
-            throw new McaFileException("Failed to decode timestamp table");
+            throw new McaFileException("Failed to decode timestamp table in " . $this->getFilename());
         }
 
         $this->offsets = $offsets;
@@ -112,7 +127,7 @@ class McaReader
         try {
             $this->readHeader();
         } catch (IOException $e) {
-            throw new McaFileException("Could not read MCA file header", previous: $e);
+            throw new McaFileException("Could not read MCA file header in " . $this->getFilename(), previous: $e);
         }
         return $this;
     }
@@ -188,7 +203,7 @@ class McaReader
             try {
                 $this->input->close();
             } catch (IOException $e) {
-                throw new McaFileException("Could not close MCA file", previous: $e);
+                throw new McaFileException("Could not close MCA file " . $this->getFilename(), previous: $e);
             }
         }
         return $this;

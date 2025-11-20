@@ -56,7 +56,7 @@ class McaWriterTest extends ThanosTestCase
         $output = new TempMemoryFile();
         $writer = new McaWriter($output);
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage("Entry region index out of bounds: 2000");
+        $this->expectExceptionMessage("Entry region index 2000 out of bounds");
         $writer->writeEntry($entry);
     }
 
@@ -71,7 +71,7 @@ class McaWriterTest extends ThanosTestCase
         $writer->writeEntry($entry);
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage("Entry at index 123 already exists in MCA file");
+        $this->expectExceptionMessage("Entry at index 123 already exists in");
         $writer->writeEntry($entry);
     }
 
@@ -199,7 +199,7 @@ class McaWriterTest extends ThanosTestCase
             ->willThrowException(new IOException("IO error"));
 
         $writer = new McaWriter($mock, writeEmptyFile: true);
-        $this->expectExceptionMessage("Could not seek to entry position in output file");
+        $this->expectExceptionMessage("Could not seek to start position in output file");
         $this->expectException(McaFileException::class);
         $writer->finalize();
     }
@@ -282,5 +282,28 @@ class McaWriterTest extends ThanosTestCase
         $output = $reflection->getProperty("output")->getValue($writer);
         $this->assertInstanceOf(File::class, $output);
         $this->assertEquals(static::TEST_DATA . "/test.mca", $output->getPath());
+    }
+
+    public function testGetFileName(): void
+    {
+        $reader = new McaWriter(new File("/tmp/test.mca"));
+        $reflection = new ReflectionClass(McaWriter::class);
+        $this->assertEquals("test.mca", $reflection->getMethod("getFilename")->invoke($reader));
+
+        $reader = new McaWriter(new TempMemoryFile());
+        $this->assertEquals("Unknown MCA file", $reflection->getMethod("getFilename")->invoke($reader));
+
+        $reader = new McaWriter(new class ("/tmp/test.mca") extends File
+        {
+            protected bool $throwOnGetName = true;
+            public function getName(): string
+            {
+                if ($this->throwOnGetName) {
+                    throw new IOException("IO error");
+                }
+                return parent::getName();
+            }
+        });
+        $this->assertEquals("Unknown MCA file", $reflection->getMethod("getFilename")->invoke($reader));
     }
 }

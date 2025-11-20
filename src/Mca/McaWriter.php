@@ -4,6 +4,7 @@ namespace Aternos\Thanos\Mca;
 
 use Aternos\IO\Exception\IOException;
 use Aternos\IO\Interfaces\Features\CloseInterface;
+use Aternos\IO\Interfaces\Features\GetNameInterface;
 use Aternos\IO\Interfaces\Features\SetPositionInterface;
 use Aternos\IO\Interfaces\Features\WriteInterface;
 use Aternos\IO\System\File\File;
@@ -47,6 +48,20 @@ class McaWriter
     }
 
     /**
+     * @return string
+     */
+    protected function getFilename(): string
+    {
+        if ($this->output instanceof GetNameInterface) {
+            try {
+                return $this->output->getName();
+            } catch (IOException) {
+            }
+        }
+        return "Unknown MCA file";
+    }
+
+    /**
      * @param McaEntryInterface $entry
      * @return $this
      * @throws McaExceptionInterface
@@ -57,11 +72,11 @@ class McaWriter
 
         $index = $entry->getRegionIndex();
         if ($index < 0 || $index >= 1024) {
-            throw new InvalidArgumentException("Entry region index out of bounds: " . $index);
+            throw new InvalidArgumentException("Entry region index " . $index . " out of bounds in " . $this->getFilename());
         }
 
         if (!$this->allowEntryOverwrite && $this->sizes[$index] !== 0 && $this->offsets[$index] !== 0) {
-            throw new InvalidArgumentException("Entry at index " . $index . " already exists in MCA file");
+            throw new InvalidArgumentException("Entry at index " . $index . " already exists in " . $this->getFilename());
         }
 
         $startOffset = $this->dataOffset;
@@ -70,13 +85,13 @@ class McaWriter
         try {
             $this->output->setPosition($startOffset);
         } catch (IOException $e) {
-            throw new McaFileException("Could not seek to entry position in output file", previous: $e);
+            throw new McaFileException("Could not seek to entry position in output file in " . $this->getFilename(), previous: $e);
         }
         foreach ($entry->getSerializedData() as $dataChunk) {
             try {
                 $this->output->write($dataChunk);
             } catch (IOException $e) {
-                throw new McaFileException("Could not write entry data to output file", previous: $e);
+                throw new McaFileException("Could not write entry data to output file " . $this->getFilename(), previous: $e);
             }
             $written += strlen($dataChunk);
         }
@@ -86,7 +101,7 @@ class McaWriter
             try {
                 $this->output->write(str_repeat("\0", $paddingLength));
             } catch (IOException $e) {
-                throw new McaFileException("Could not write padding to output file", previous: $e);
+                throw new McaFileException("Could not write padding to output file " . $this->getFilename(), previous: $e);
             }
             $written += $paddingLength;
         }
@@ -122,13 +137,13 @@ class McaWriter
         try {
             $this->output->setPosition(0);
         } catch (IOException $e) {
-            throw new McaFileException("Could not seek to entry position in output file", previous: $e);
+            throw new McaFileException("Could not seek to start position in output file " . $this->getFilename(), previous: $e);
         }
         try {
             $this->output->write($locationData);
             $this->output->write($timestampData);
         } catch (IOException $e) {
-            throw new McaFileException("Could not write MCA header to output file", previous: $e);
+            throw new McaFileException("Could not write MCA header to output file " . $this->getFilename(), previous: $e);
         }
 
         $this->finalized = true;
@@ -149,7 +164,7 @@ class McaWriter
             try {
                 $this->output->close();
             } catch (IOException $e) {
-                throw new McaFileException("Could not close output file", previous: $e);
+                throw new McaFileException("Could not close output file " . $this->getFilename(), previous: $e);
             }
         }
         return $this;

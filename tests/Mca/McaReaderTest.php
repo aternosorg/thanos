@@ -3,10 +3,12 @@
 namespace Aternos\Thanos\Tests\Mca;
 
 use Aternos\IO\Exception\IOException;
+use Aternos\IO\System\File\File;
 use Aternos\IO\System\File\TempMemoryFile;
 use Aternos\Thanos\Exception\McaFileException;
 use Aternos\Thanos\Mca\McaReader;
 use Aternos\Thanos\Tests\ThanosTestCase;
+use ReflectionClass;
 
 class McaReaderTest extends ThanosTestCase
 {
@@ -116,5 +118,28 @@ class McaReaderTest extends ThanosTestCase
         $this->expectExceptionMessage("Failed to decode timestamp table");
         $this->expectException(McaFileException::class);
         $reader->getChunks()->current();
+    }
+
+    public function testGetFileName(): void
+    {
+        $reader = new McaReader(new File("/tmp/test.mca"), 5, 10);
+        $reflection = new ReflectionClass(McaReader::class);
+        $this->assertEquals("test.mca", $reflection->getMethod("getFilename")->invoke($reader));
+
+        $reader = new McaReader(new TempMemoryFile(), 5, 10);
+        $this->assertEquals("Unknown MCA file", $reflection->getMethod("getFilename")->invoke($reader));
+
+        $reader = new McaReader(new class ("/tmp/test.mca") extends File
+        {
+            protected bool $throwOnGetName = true;
+            public function getName(): string
+            {
+                if ($this->throwOnGetName) {
+                    throw new IOException("IO error");
+                }
+                return parent::getName();
+            }
+        }, 5, 10);
+        $this->assertEquals("Unknown MCA file", $reflection->getMethod("getFilename")->invoke($reader));
     }
 }
