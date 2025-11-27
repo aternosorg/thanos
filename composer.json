@@ -31,5 +31,8 @@
   },
   "require-dev": {
     "phpunit/phpunit": "^12.4"
+  },
+  "scripts": {
+    "test": "phpunit --config phpunit.xml --testdox"
   }
 }
