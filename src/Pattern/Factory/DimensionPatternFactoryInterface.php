@@ -2,8 +2,9 @@
 
 namespace Aternos\Thanos\Pattern\Factory;
 
+use Aternos\IO\Interfaces\Features\GetPathInterface;
+use Aternos\IO\Interfaces\Types\DirectoryInterface;
 use Aternos\Thanos\Pattern\ChunkPatternInterface;
-use Aternos\Thanos\World\DimensionTaskGenerator;
 
 /**
  * Dynamically creates a chunk pattern based on the dimension it is applied to
@@ -11,8 +12,8 @@ use Aternos\Thanos\World\DimensionTaskGenerator;
 interface DimensionPatternFactoryInterface
 {
     /**
-     * @param DimensionTaskGenerator $dimension
+     * @param GetPathInterface&DirectoryInterface $location
      * @return ChunkPatternInterface
      */
-    public function makePattern(DimensionTaskGenerator $dimension): ChunkPatternInterface;
+    public function makePattern(DirectoryInterface&GetPathInterface $location): ChunkPatternInterface;
 }

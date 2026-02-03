@@ -2,12 +2,10 @@
 
 namespace Aternos\Thanos\World;
 
-use Aternos\IO\Exception\IOException;
 use Aternos\IO\Interfaces\Features\GetPathInterface;
 use Aternos\IO\Interfaces\Types\DirectoryInterface;
 use Aternos\IO\System\Directory\Directory;
 use Aternos\Taskmaster\Task\TaskFactoryInterface;
-use Aternos\Thanos\Exception\FileSystemException;
 use Aternos\Thanos\Pattern\ChunkPatternInterface;
 use Aternos\Thanos\Pattern\Factory\DimensionPatternFactoryInterface;
 use Aternos\Thanos\Pattern\Factory\WorldPatternFactoryInterface;
@@ -50,8 +48,8 @@ class World
             }
         }
 
-        $dimensionTaskGenerator = new DimensionTaskGenerator($this->source, $destination, $patterns);
-        return new ThanosTaskFactory($dimensionTaskGenerator->generateTasks());
+        $dimensionTaskGenerator = new NewDimensionTaskGenerator($patterns);
+        return new ThanosTaskFactory($dimensionTaskGenerator->generateTasks($this->source, $destination));
     }
 
     /**

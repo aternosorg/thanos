@@ -12,7 +12,7 @@ use Aternos\Nbt\Tag\StringTag;
 use Aternos\Thanos\Pattern\Factory\ForceLoadedChunkPatternFactory;
 use Aternos\Thanos\Pattern\ListPattern;
 use Aternos\Thanos\Tests\ThanosTestCase;
-use Aternos\Thanos\World\DimensionTaskGenerator;
+use Aternos\Thanos\World\OldDimensionTaskGenerator;
 use ReflectionClass;
 
 class ForceLoadedChunkPatternFactoryTest extends ThanosTestCase
@@ -27,10 +27,10 @@ class ForceLoadedChunkPatternFactoryTest extends ThanosTestCase
         $this->reflection = new ReflectionClass($this->factory);
     }
 
-    protected function makeDimension(string $path): DimensionTaskGenerator
+    protected function makeDimension(string $path): OldDimensionTaskGenerator
     {
         $source = new Directory($path);
-        return new DimensionTaskGenerator(
+        return new OldDimensionTaskGenerator(
             $source,
             new Directory("/tmp/destination"),
             []
@@ -131,7 +131,7 @@ class ForceLoadedChunkPatternFactoryTest extends ThanosTestCase
             }
         };
 
-        $dimension = new DimensionTaskGenerator(
+        $dimension = new OldDimensionTaskGenerator(
             $source,
             new Directory("/tmp/destination"),
             []

@@ -24,6 +24,10 @@ class McaEntryTest extends McaEntryTestCase
     #[TestWith([CompressionMethod::LZ4, LZ4BlockMcaDataReader::class])]
     public function testGetReader(CompressionMethod $method, string $readerClass): void
     {
+        if ($method === CompressionMethod::LZ4 && !function_exists('lz4_uncompress')) {
+            $this->markTestSkipped("LZ4 extension is not available");
+        }
+
         $data = $this->getDataFile("");
         $entry = new McaEntry($data, 0, 0, 0, 0);
         $reflection = new ReflectionClass($entry);

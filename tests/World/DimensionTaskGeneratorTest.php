@@ -15,7 +15,7 @@ use Aternos\Thanos\Task\ProcessRegionTask;
 use Aternos\Thanos\Task\ThanosTask;
 use Aternos\Thanos\Tests\ThanosTestCase;
 use Aternos\Thanos\Util\PathPair;
-use Aternos\Thanos\World\DimensionTaskGenerator;
+use Aternos\Thanos\World\OldDimensionTaskGenerator;
 use Generator;
 use ReflectionClass;
 
@@ -114,7 +114,7 @@ class DimensionTaskGeneratorTest extends ThanosTestCase
 
     public function testGenerateTasksForEachSourceFile(): void
     {
-        $generator = new DimensionTaskGenerator(new Directory(static::TEST_WORLD), new Directory("/tmp/"), []);
+        $generator = new OldDimensionTaskGenerator(new Directory(static::TEST_WORLD), new Directory("/tmp/"), []);
         $tasks = $generator->generateTasks();
         $sourcePaths = [];
         foreach ($tasks as $task) {
@@ -130,7 +130,7 @@ class DimensionTaskGeneratorTest extends ThanosTestCase
 
     public function testGenerateTasksForEachDestinationFile(): void
     {
-        $generator = new DimensionTaskGenerator(new Directory(static::TEST_WORLD), new Directory("/tmp/"), []);
+        $generator = new OldDimensionTaskGenerator(new Directory(static::TEST_WORLD), new Directory("/tmp/"), []);
         $tasks = $generator->generateTasks();
         $sourcePaths = [];
         foreach ($tasks as $task) {
@@ -145,7 +145,7 @@ class DimensionTaskGeneratorTest extends ThanosTestCase
 
     public function testGenerateCopyTasksSkipLinks(): void
     {
-        $generator = new DimensionTaskGenerator(new Directory(static::TEST_DATA), new Directory("/tmp/"), []);
+        $generator = new OldDimensionTaskGenerator(new Directory(static::TEST_DATA), new Directory("/tmp/"), []);
         $reflection = new ReflectionClass($generator);
 
         $link = new Link(static::TEST_DATA . "/link")->setTarget(new Directory(static::TEST_DATA));
@@ -155,7 +155,7 @@ class DimensionTaskGeneratorTest extends ThanosTestCase
 
     public function testGenerateCopyTasksSkipInvalidChildren(): void
     {
-        $generator = new DimensionTaskGenerator(new Directory(static::TEST_DATA), new Directory("/tmp/"), []);
+        $generator = new OldDimensionTaskGenerator(new Directory(static::TEST_DATA), new Directory("/tmp/"), []);
         $reflection = new ReflectionClass($generator);
 
         $testDir = new class(static::TEST_DATA) extends Directory
@@ -175,7 +175,7 @@ class DimensionTaskGeneratorTest extends ThanosTestCase
 
     public function testGetMcaFileReturnsNullIfDirectoryIsNull(): void
     {
-        $generator = new DimensionTaskGenerator(new Directory(static::TEST_DATA), new Directory("/tmp/"), []);
+        $generator = new OldDimensionTaskGenerator(new Directory(static::TEST_DATA), new Directory("/tmp/"), []);
         $reflection = new ReflectionClass($generator);
 
         $this->assertNull($reflection->getMethod("getMcaFile")->invoke($generator, null, "r.0.0.mca"));
@@ -183,7 +183,7 @@ class DimensionTaskGeneratorTest extends ThanosTestCase
 
     public function testGenerateRemainingFilesInRegionDirectorySkipsMissingDirectories(): void
     {
-        $generator = new DimensionTaskGenerator(new Directory(static::TEST_DATA), new Directory("/tmp/"), []);
+        $generator = new OldDimensionTaskGenerator(new Directory(static::TEST_DATA), new Directory("/tmp/"), []);
         $reflection = new ReflectionClass($generator);
 
         $tasks = iterator_to_array($reflection->getMethod("generateRemainingFilesInRegionDirectory")->invoke($generator, null, []));
@@ -192,7 +192,7 @@ class DimensionTaskGeneratorTest extends ThanosTestCase
 
     public function testGenerateRemainingFilesInRegionDirectorySkipsInvalidChildren(): void
     {
-        $generator = new DimensionTaskGenerator(new Directory(static::TEST_DATA), new Directory("/tmp/"), []);
+        $generator = new OldDimensionTaskGenerator(new Directory(static::TEST_DATA), new Directory("/tmp/"), []);
         $reflection = new ReflectionClass($generator);
 
         $testDir = new class(static::TEST_DATA) extends Directory
@@ -211,7 +211,7 @@ class DimensionTaskGeneratorTest extends ThanosTestCase
 
     public function testGenerateRegionTasksSkipsInvalidChildren(): void
     {
-        $generator = new DimensionTaskGenerator(new Directory(static::TEST_DATA), new Directory("/tmp/"), []);
+        $generator = new OldDimensionTaskGenerator(new Directory(static::TEST_DATA), new Directory("/tmp/"), []);
         $reflection = new ReflectionClass($generator);
 
         $testDir = new class(static::TEST_DATA) extends Directory
@@ -238,7 +238,7 @@ class DimensionTaskGeneratorTest extends ThanosTestCase
             }
         };
 
-        $generator = new DimensionTaskGenerator($testDir, new Directory("/tmp/"), []);
+        $generator = new OldDimensionTaskGenerator($testDir, new Directory("/tmp/"), []);
 
         $tasks = iterator_to_array($generator->generateTasks());
         $this->assertCount(1, $tasks);
@@ -249,13 +249,13 @@ class DimensionTaskGeneratorTest extends ThanosTestCase
     public function testGetSource(): void
     {
         $source = new Directory(static::TEST_DATA);
-        $generator = new DimensionTaskGenerator($source, new Directory("/tmp/"), []);
+        $generator = new OldDimensionTaskGenerator($source, new Directory("/tmp/"), []);
         $this->assertSame($source, $generator->getSource());
     }
 
     public function testRunDimensionPatternFactories(): void
     {
-        $generator = new DimensionTaskGenerator(new Directory(static::TEST_WORLD), new Directory("/tmp/"), [new ForceLoadedChunkPatternFactory()]);
+        $generator = new OldDimensionTaskGenerator(new Directory(static::TEST_WORLD), new Directory("/tmp/"), [new ForceLoadedChunkPatternFactory()]);
         $tasks = $generator->generateTasks();
         foreach ($tasks as $task) {
             if (!$task instanceof ProcessRegionTask) {
@@ -270,7 +270,7 @@ class DimensionTaskGeneratorTest extends ThanosTestCase
     public function testAddPatternsToProcessTasks(): void
     {
         $pattern = new RangePattern(0, 0, 10, 10);
-        $generator = new DimensionTaskGenerator(new Directory(static::TEST_WORLD), new Directory("/tmp/"), [$pattern]);
+        $generator = new OldDimensionTaskGenerator(new Directory(static::TEST_WORLD), new Directory("/tmp/"), [$pattern]);
         $tasks = $generator->generateTasks();
         foreach ($tasks as $task) {
             if (!$task instanceof ProcessRegionTask) {

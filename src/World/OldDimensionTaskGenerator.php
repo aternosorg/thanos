@@ -17,7 +17,7 @@ use Aternos\Thanos\Task\ThanosTask;
 use Aternos\Thanos\Util\PathPair;
 use Generator;
 
-class DimensionTaskGenerator
+class OldDimensionTaskGenerator
 {
     /**
      * @param IOElementInterface $directory
@@ -83,7 +83,7 @@ class DimensionTaskGenerator
                 /** @var DirectoryInterface&GetPathInterface $child */
                 /** @var DirectoryInterface&GetPathInterface $newTarget */
                 $newTarget = $this->target->getChild($child->getName(), DirectoryInterface::class, GetPathInterface::class);
-                yield from new DimensionTaskGenerator($child, $newTarget, $this->patterns)->generateTasks();
+                yield from new OldDimensionTaskGenerator($child, $newTarget, $this->patterns)->generateTasks();
                 continue;
             }
 

@@ -4,6 +4,7 @@ namespace Aternos\Thanos\Pattern\Factory;
 
 use Aternos\IO\Exception\IOException;
 use Aternos\IO\Interfaces\Features\ExistsInterface;
+use Aternos\IO\Interfaces\Features\GetPathInterface;
 use Aternos\IO\Interfaces\Features\GetSizeInterface;
 use Aternos\IO\Interfaces\Features\IsEndOfFileInterface;
 use Aternos\IO\Interfaces\Features\ReadInterface;
@@ -16,19 +17,22 @@ use Aternos\Nbt\Tag\Tag;
 use Aternos\Nbt\Tag\TagType;
 use Aternos\Thanos\Pattern\ChunkPatternInterface;
 use Aternos\Thanos\Pattern\ListPattern;
-use Aternos\Thanos\World\DimensionTaskGenerator;
 use Exception;
 
 class ForceLoadedChunkPatternFactory implements DimensionPatternFactoryInterface
 {
+    protected const array FILES = [
+        "data/minecraft/chunk_tickets.dat",
+        "data/chunks.dat",
+    ];
 
     /**
      * @inheritDoc
      */
-    public function makePattern(DimensionTaskGenerator $dimension): ChunkPatternInterface
+    public function makePattern(DirectoryInterface&GetPathInterface $location): ChunkPatternInterface
     {
         try {
-            $coordinates = $this->getForceLoadedChunks($dimension->getSource());
+            $coordinates = $this->getForceLoadedChunks($location);
         } catch (Exception) {
             $coordinates = [];
         }
@@ -43,10 +47,15 @@ class ForceLoadedChunkPatternFactory implements DimensionPatternFactoryInterface
      */
     protected function getForceLoadedChunks(DirectoryInterface $dimension): array
     {
-        /** @var ExistsInterface&ReadInterface&IsEndOfFileInterface&GetSizeInterface $dataFile */
-        $dataFile = $dimension->getChild("data/chunks.dat", ExistsInterface::class, ReadInterface::class, IsEndOfFileInterface::class);
-        if (!$dataFile->exists()) {
-            return [];
+        $dataFile = null;
+        foreach (self::FILES as $filePath) {
+            /** @var ExistsInterface&ReadInterface&IsEndOfFileInterface&GetSizeInterface $file */
+            $file = $dimension->getChild($filePath, ExistsInterface::class, ReadInterface::class, IsEndOfFileInterface::class);
+            if (!$file->exists()) {
+                continue;
+            }
+            $dataFile = $file;
+            break;
         }
 
         $content = $dataFile->read($dataFile->getSize());
