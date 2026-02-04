@@ -57,6 +57,9 @@ class ForceLoadedChunkPatternFactory implements DimensionPatternFactoryInterface
             $dataFile = $file;
             break;
         }
+        if ($dataFile === null) {
+            return [];
+        }
 
         $content = $dataFile->read($dataFile->getSize());
         $reader = new GZipCompressedStringReader($content, NbtFormat::JAVA_EDITION);

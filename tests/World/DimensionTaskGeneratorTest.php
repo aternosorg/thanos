@@ -4,6 +4,7 @@ namespace Aternos\Thanos\Tests\World;
 
 use Aternos\IO\Interfaces\Features\GetPathInterface;
 use Aternos\IO\System\Directory\Directory;
+use Aternos\IO\System\Directory\TempDirectory;
 use Aternos\IO\System\File\TempMemoryFile;
 use Aternos\IO\System\Link\Link;
 use Aternos\Thanos\Pattern\Factory\ForceLoadedChunkPatternFactory;
@@ -15,8 +16,9 @@ use Aternos\Thanos\Task\ProcessRegionTask;
 use Aternos\Thanos\Task\ThanosTask;
 use Aternos\Thanos\Tests\ThanosTestCase;
 use Aternos\Thanos\Util\PathPair;
-use Aternos\Thanos\World\OldDimensionTaskGenerator;
+use Aternos\Thanos\World\DimensionTaskGenerator;
 use Generator;
+use PHPUnit\Framework\Attributes\TestWith;
 use ReflectionClass;
 
 class DimensionTaskGeneratorTest extends ThanosTestCase
@@ -96,9 +98,9 @@ class DimensionTaskGeneratorTest extends ThanosTestCase
         return [];
     }
 
-    protected function getWorldFiles(bool $includeDirectories = false): array
+    protected function getWorldFiles(bool $includeDirectories = false, string $worldPath = self::TEST_WORLD): array
     {
-        $directory = new Directory(static::TEST_WORLD);
+        $directory = new Directory($worldPath);
         $files = [];
         foreach ($directory->getChildrenRecursive() as $child) {
             if (!$child instanceof GetPathInterface) {
@@ -112,51 +114,66 @@ class DimensionTaskGeneratorTest extends ThanosTestCase
         return $files;
     }
 
-    public function testGenerateTasksForEachSourceFile(): void
+    #[TestWith([self::TEST_WORLD])]
+    #[TestWith([self::TEST_WORLD_26_1])]
+    #[TestWith([self::TEST_LEGACY_FORCELOAD])]
+    public function testGenerateTasksForEachSourceFile(string $worldPath): void
     {
-        $generator = new OldDimensionTaskGenerator(new Directory(static::TEST_WORLD), new Directory("/tmp/"), []);
-        $tasks = $generator->generateTasks();
+        $generator = new DimensionTaskGenerator([]);
+        $tasks = $generator->generateTasks(new Directory($worldPath), new Directory("/tmp/"));
         $sourcePaths = [];
         foreach ($tasks as $task) {
-            array_push($sourcePaths, ...$this->getSourcePaths($task, static::TEST_WORLD));
+            array_push($sourcePaths, ...$this->getSourcePaths($task, $worldPath));
         }
 
-        $worldFiles = $this->getWorldFiles();
+        $worldFiles = $this->getWorldFiles(worldPath: $worldPath);
+
         $this->assertEquals(count($worldFiles), count($sourcePaths), "Number of world files and generated tasks' source paths do not match.");
         foreach ($worldFiles as $worldFile) {
             $this->assertContains($worldFile, $sourcePaths, "World file '" . $worldFile . "' is missing in generated tasks' source paths.");
         }
     }
 
-    public function testGenerateTasksForEachDestinationFile(): void
+    #[TestWith([self::TEST_WORLD])]
+    #[TestWith([self::TEST_WORLD_26_1])]
+    #[TestWith([self::TEST_LEGACY_FORCELOAD])]
+    public function testGenerateTasksForEachDestinationFile(string $worldPath): void
     {
-        $generator = new OldDimensionTaskGenerator(new Directory(static::TEST_WORLD), new Directory("/tmp/"), []);
-        $tasks = $generator->generateTasks();
-        $sourcePaths = [];
+        $generator = new DimensionTaskGenerator([]);
+        $tasks = $generator->generateTasks(new Directory($worldPath), new Directory("/tmp/"));
+        $destinationPaths = [];
         foreach ($tasks as $task) {
-            array_push($sourcePaths, ...$this->getDestinationPaths($task, "/tmp/"));
+            array_push($destinationPaths, ...$this->getDestinationPaths($task, "/tmp/"));
         }
 
-        $worldFiles = $this->getWorldFiles(true);
+        $worldFiles = $this->getWorldFiles(true, $worldPath);
         foreach ($worldFiles as $worldFile) {
-            $this->assertContains($worldFile, $sourcePaths, "World file '" . $worldFile . "' is missing in generated tasks' source paths.");
+            $this->assertContains($worldFile, $destinationPaths, "World file '" . $worldFile . "' is missing in generated tasks' destination paths.");
         }
     }
 
     public function testGenerateCopyTasksSkipLinks(): void
     {
-        $generator = new OldDimensionTaskGenerator(new Directory(static::TEST_DATA), new Directory("/tmp/"), []);
+        $generator = new DimensionTaskGenerator([]);
         $reflection = new ReflectionClass($generator);
 
-        $link = new Link(static::TEST_DATA . "/link")->setTarget(new Directory(static::TEST_DATA));
-        $tasks = iterator_to_array($reflection->getMethod("generateCopyTasks")->invoke($generator, $link));
+        $source = new TempDirectory();
+        $target = new TempDirectory();
+
+        $link = new Link($source->getPath() . "/test")->setTarget(new Directory(static::TEST_WORLD));
+
+        $tasks = iterator_to_array($reflection->getMethod("copyFilesInDirectory")->invoke($generator, $source, $target));
+
+        $link->delete();
+        $target->delete();
+        $source->delete();
+
         $this->assertCount(0, $tasks, "No tasks should be generated for links.");
     }
 
-    public function testGenerateCopyTasksSkipInvalidChildren(): void
+    public function testSkipInvalidChildren(): void
     {
-        $generator = new OldDimensionTaskGenerator(new Directory(static::TEST_DATA), new Directory("/tmp/"), []);
-        $reflection = new ReflectionClass($generator);
+        $generator = new DimensionTaskGenerator([]);
 
         $testDir = new class(static::TEST_DATA) extends Directory
         {
@@ -166,7 +183,7 @@ class DimensionTaskGeneratorTest extends ThanosTestCase
             }
         };
 
-        $tasks = iterator_to_array($reflection->getMethod("generateCopyTasks")->invoke($generator, $testDir));
+        $tasks = iterator_to_array($generator->generateTasks($testDir, new TempDirectory()));
         $this->assertCount(1, $tasks, "Only the directory creation task should be generated.");
 
         $task = $tasks[0];
@@ -175,88 +192,16 @@ class DimensionTaskGeneratorTest extends ThanosTestCase
 
     public function testGetMcaFileReturnsNullIfDirectoryIsNull(): void
     {
-        $generator = new OldDimensionTaskGenerator(new Directory(static::TEST_DATA), new Directory("/tmp/"), []);
+        $generator = new DimensionTaskGenerator([]);
         $reflection = new ReflectionClass($generator);
 
         $this->assertNull($reflection->getMethod("getMcaFile")->invoke($generator, null, "r.0.0.mca"));
     }
 
-    public function testGenerateRemainingFilesInRegionDirectorySkipsMissingDirectories(): void
-    {
-        $generator = new OldDimensionTaskGenerator(new Directory(static::TEST_DATA), new Directory("/tmp/"), []);
-        $reflection = new ReflectionClass($generator);
-
-        $tasks = iterator_to_array($reflection->getMethod("generateRemainingFilesInRegionDirectory")->invoke($generator, null, []));
-        $this->assertCount(0, $tasks);
-    }
-
-    public function testGenerateRemainingFilesInRegionDirectorySkipsInvalidChildren(): void
-    {
-        $generator = new OldDimensionTaskGenerator(new Directory(static::TEST_DATA), new Directory("/tmp/"), []);
-        $reflection = new ReflectionClass($generator);
-
-        $testDir = new class(static::TEST_DATA) extends Directory
-        {
-            public function getChildren(bool $allowOutsideLinks = false): Generator
-            {
-                yield new TempMemoryFile();
-            }
-        };
-
-        $tasks = iterator_to_array($reflection->getMethod("generateRemainingFilesInRegionDirectory")->invoke($generator, $testDir, []));
-        $this->assertCount(1, $tasks);
-        $task = $tasks[0];
-        $this->assertInstanceOf(CreateDirectoryTask::class, $task);
-    }
-
-    public function testGenerateRegionTasksSkipsInvalidChildren(): void
-    {
-        $generator = new OldDimensionTaskGenerator(new Directory(static::TEST_DATA), new Directory("/tmp/"), []);
-        $reflection = new ReflectionClass($generator);
-
-        $testDir = new class(static::TEST_DATA) extends Directory
-        {
-            public function getChildren(bool $allowOutsideLinks = false): Generator
-            {
-                yield new TempMemoryFile();
-            }
-        };
-
-        $tasks = iterator_to_array($reflection->getMethod("generateRegionTasks")->invoke($generator, $testDir, null, null));
-        $this->assertCount(1, $tasks);
-        $task = $tasks[0];
-        $this->assertInstanceOf(CreateDirectoryTask::class, $task);
-    }
-
-    public function testGenerateTasksSkipsInvalidChildren(): void
-    {
-        $testDir = new class(static::TEST_DATA) extends Directory
-        {
-            public function getChildren(bool $allowOutsideLinks = false): Generator
-            {
-                yield new TempMemoryFile();
-            }
-        };
-
-        $generator = new OldDimensionTaskGenerator($testDir, new Directory("/tmp/"), []);
-
-        $tasks = iterator_to_array($generator->generateTasks());
-        $this->assertCount(1, $tasks);
-        $task = $tasks[0];
-        $this->assertInstanceOf(CreateDirectoryTask::class, $task);
-    }
-
-    public function testGetSource(): void
-    {
-        $source = new Directory(static::TEST_DATA);
-        $generator = new OldDimensionTaskGenerator($source, new Directory("/tmp/"), []);
-        $this->assertSame($source, $generator->getSource());
-    }
-
     public function testRunDimensionPatternFactories(): void
     {
-        $generator = new OldDimensionTaskGenerator(new Directory(static::TEST_WORLD), new Directory("/tmp/"), [new ForceLoadedChunkPatternFactory()]);
-        $tasks = $generator->generateTasks();
+        $generator = new DimensionTaskGenerator([new ForceLoadedChunkPatternFactory()]);
+        $tasks = $generator->generateTasks(new Directory(static::TEST_WORLD), new Directory("/tmp/"));
         foreach ($tasks as $task) {
             if (!$task instanceof ProcessRegionTask) {
                 continue;
@@ -270,8 +215,8 @@ class DimensionTaskGeneratorTest extends ThanosTestCase
     public function testAddPatternsToProcessTasks(): void
     {
         $pattern = new RangePattern(0, 0, 10, 10);
-        $generator = new OldDimensionTaskGenerator(new Directory(static::TEST_WORLD), new Directory("/tmp/"), [$pattern]);
-        $tasks = $generator->generateTasks();
+        $generator = new DimensionTaskGenerator([$pattern]);
+        $tasks = $generator->generateTasks(new Directory(static::TEST_WORLD), new Directory("/tmp/"));
         foreach ($tasks as $task) {
             if (!$task instanceof ProcessRegionTask) {
                 continue;

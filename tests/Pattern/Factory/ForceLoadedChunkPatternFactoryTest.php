@@ -39,18 +39,25 @@ class ForceLoadedChunkPatternFactoryTest extends ThanosTestCase
 
     public function testParseForceLoadedChunks(): void
     {
-        $dimension = $this->makeDimension(static::TEST_WORLD);
-        $pattern = $this->factory->makePattern($dimension);
+        $pattern = $this->factory->makePattern(new Directory(static::TEST_WORLD));
         $this->assertInstanceOf(ListPattern::class, $pattern);
         $reflection = new ReflectionClass($pattern);
         $chunks = $reflection->getProperty("chunks")->getValue($pattern);
         $this->assertEquals([[1, 1]], $chunks);
     }
 
+    public function testParse26dot1ForceLoadedChunks(): void
+    {
+        $pattern = $this->factory->makePattern(new Directory(static::TEST_WORLD_26_1 . "/dimensions/minecraft/overworld"));
+        $this->assertInstanceOf(ListPattern::class, $pattern);
+        $reflection = new ReflectionClass($pattern);
+        $chunks = $reflection->getProperty("chunks")->getValue($pattern);
+        $this->assertEquals([[0, 0], [0, 1], [1, 0], [1, 1]], $chunks);
+    }
+
     public function testParseLegacyForceLoadedChunks(): void
     {
-        $dimension = $this->makeDimension(static::TEST_LEGACY_FORCELOAD);
-        $pattern = $this->factory->makePattern($dimension);
+        $pattern = $this->factory->makePattern(new Directory(static::TEST_LEGACY_FORCELOAD));
         $this->assertInstanceOf(ListPattern::class, $pattern);
         $reflection = new ReflectionClass($pattern);
         $chunks = $reflection->getProperty("chunks")->getValue($pattern);
@@ -59,8 +66,7 @@ class ForceLoadedChunkPatternFactoryTest extends ThanosTestCase
 
     public function testMissingChunkDataFile(): void
     {
-        $dimension = $this->makeDimension(static::TEST_WORLD . "/region");
-        $pattern = $this->factory->makePattern($dimension);
+        $pattern = $this->factory->makePattern(new Directory(static::TEST_WORLD . "/region"));
         $this->assertInstanceOf(ListPattern::class, $pattern);
         $reflection = new ReflectionClass($pattern);
         $chunks = $reflection->getProperty("chunks")->getValue($pattern);
@@ -131,12 +137,7 @@ class ForceLoadedChunkPatternFactoryTest extends ThanosTestCase
             }
         };
 
-        $dimension = new OldDimensionTaskGenerator(
-            $source,
-            new Directory("/tmp/destination"),
-            []
-        );
-        $pattern = $this->factory->makePattern($dimension);
+        $pattern = $this->factory->makePattern($source);
         $this->assertInstanceOf(ListPattern::class, $pattern);
         $reflection = new ReflectionClass($pattern);
         $chunks = $reflection->getProperty("chunks")->getValue($pattern);

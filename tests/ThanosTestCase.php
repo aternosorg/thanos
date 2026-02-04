@@ -12,6 +12,7 @@ use PHPUnit\Framework\TestCase;
 class ThanosTestCase extends TestCase
 {
     const string TEST_WORLD = __DIR__ . "/Fixtures/world";
+    const string TEST_WORLD_26_1 = __DIR__ . "/Fixtures/world-26-1";
     const string TEST_LEGACY_FORCELOAD = __DIR__ . "/Fixtures/legacy-forceload";
     const string TEST_REGION = self::TEST_WORLD . "/region/r.0.0.mca";
     const string TEST_ENTITIES = self::TEST_WORLD . "/entities/r.0.0.mca";

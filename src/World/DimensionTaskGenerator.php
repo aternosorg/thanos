@@ -3,7 +3,9 @@
 namespace Aternos\Thanos\World;
 
 use Aternos\IO\Exception\IOException;
+use Aternos\IO\Interfaces\Features\GetChildrenInterface;
 use Aternos\IO\Interfaces\Features\GetPathInterface;
+use Aternos\IO\Interfaces\IOElementInterface;
 use Aternos\IO\Interfaces\Types\DirectoryInterface;
 use Aternos\IO\Interfaces\Types\FileInterface;
 use Aternos\Thanos\Mca\McaReader;
@@ -15,7 +17,7 @@ use Aternos\Thanos\Task\ProcessRegionTask;
 use Aternos\Thanos\Util\PathPair;
 use Generator;
 
-class NewDimensionTaskGenerator
+class DimensionTaskGenerator
 {
     /**
      * @param (ChunkPatternInterface|DimensionPatternFactoryInterface)[] $patterns
@@ -42,10 +44,8 @@ class NewDimensionTaskGenerator
         $entities = null;
         $poi = null;
 
-        foreach ($source->getChildren() as $child) {
-            if (!$child instanceof GetPathInterface) {
-                continue;
-            }
+        /** @var GetPathInterface $child */
+        foreach ($this->getChildrenOfType($source, GetPathInterface::class) as $child) {
             $name = $child->getName();
             if ($name === "region" && $child instanceof DirectoryInterface) {
                 $region = $child;
@@ -72,7 +72,7 @@ class NewDimensionTaskGenerator
             );
         }
 
-        if ($region !== null) {
+        if ($region !== null || $entities !== null || $poi !== null) {
             yield from $this->generateRegionTasks(
                 $source,
                 $target,
@@ -108,6 +108,24 @@ class NewDimensionTaskGenerator
     }
 
     /**
+     * @param GetChildrenInterface $parent
+     * @param string ...$type
+     * @return Generator<IOElementInterface>
+     * @throws IOException
+     */
+    protected function getChildrenOfType(GetChildrenInterface $parent, string ...$type): Generator
+    {
+        foreach ($parent->getChildren() as $child) {
+            foreach ($type as $t) {
+                if (!is_a($child, $t)) {
+                    continue 2;
+                }
+            }
+            yield $child;
+        }
+    }
+
+    /**
      * @param GetPathInterface&DirectoryInterface $source
      * @param GetPathInterface&DirectoryInterface $target
      * @param array $excludedFiles
@@ -120,10 +138,8 @@ class NewDimensionTaskGenerator
         array $excludedFiles = []
     ): Generator
     {
-        foreach ($source->getChildren() as $child) {
-            if (!$child instanceof GetPathInterface) {
-                continue;
-            }
+        /** @var GetPathInterface $child */
+        foreach ($this->getChildrenOfType($source, GetPathInterface::class) as $child) {
             if (in_array($child->getName(), $excludedFiles, true)) {
                 continue;
             }
@@ -135,10 +151,14 @@ class NewDimensionTaskGenerator
                 continue;
             }
 
-            yield from $this->copyFilesInDirectory(
-                $child,
-                $this->getChildDirectory($target, $child->getName())
-            );
+            if ($child instanceof DirectoryInterface) {
+                $newTarget = $this->getChildDirectory($target, $child->getName());
+                yield new CreateDirectoryTask($newTarget->getPath());
+                yield from $this->copyFilesInDirectory(
+                    $child,
+                    $newTarget
+                );
+            }
         }
     }
 
@@ -172,11 +192,7 @@ class NewDimensionTaskGenerator
         $processedEntities = [];
         $processedPoi = [];
         if ($region !== null) {
-            foreach ($region->getChildren() as $regionFile) {
-                if (!$regionFile instanceof GetPathInterface) {
-                    continue;
-                }
-
+            foreach ($this->getChildrenOfType($region, GetPathInterface::class) as $regionFile) {
                 if (!$regionFile instanceof FileInterface ||
                     !preg_match(McaReader::MCA_FILE_PATTERN, $regionFile->getName()) ||
                     $regionFile->getSize() === 0
@@ -203,12 +219,15 @@ class NewDimensionTaskGenerator
         }
 
         if ($region !== null) {
+            yield new CreateDirectoryTask($this->getChildDirectory($target, "region")->getPath());
             yield from $this->copyFilesInDirectory($region, $this->getChildDirectory($target, "region"), $processedRegions);
         }
         if ($entities !== null) {
+            yield new CreateDirectoryTask($this->getChildDirectory($target, "entities")->getPath());
             yield from $this->copyFilesInDirectory($entities, $this->getChildDirectory($target, "entities"), $processedEntities);
         }
         if ($poi !== null) {
+            yield new CreateDirectoryTask($this->getChildDirectory($target, "poi")->getPath());
             yield from $this->copyFilesInDirectory($poi, $this->getChildDirectory($target, "poi"), $processedPoi);
         }
     }

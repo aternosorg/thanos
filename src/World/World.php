@@ -48,7 +48,7 @@ class World
             }
         }
 
-        $dimensionTaskGenerator = new NewDimensionTaskGenerator($patterns);
+        $dimensionTaskGenerator = new DimensionTaskGenerator($patterns);
         return new ThanosTaskFactory($dimensionTaskGenerator->generateTasks($this->source, $destination));
     }
 
