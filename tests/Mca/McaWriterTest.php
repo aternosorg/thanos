@@ -7,9 +7,11 @@ use Aternos\IO\System\File\File;
 use Aternos\IO\System\File\TempMemoryFile;
 use Aternos\Thanos\Exception\McaFileException;
 use Aternos\Thanos\Mca\Entry\McaEntry;
+use Aternos\Thanos\Mca\Entry\McaEntryInterface;
 use Aternos\Thanos\Mca\McaReader;
 use Aternos\Thanos\Mca\McaWriter;
 use Aternos\Thanos\Tests\ThanosTestCase;
+use Generator;
 use InvalidArgumentException;
 use ReflectionClass;
 
@@ -305,5 +307,68 @@ class McaWriterTest extends ThanosTestCase
             }
         });
         $this->assertEquals("Unknown MCA file", $reflection->getMethod("getFilename")->invoke($reader));
+    }
+
+    /** An entry whose serialized payload is exactly [$sectors] sectors long. */
+    protected function makeSizedEntry(int $sectors): McaEntryInterface
+    {
+        return new class($sectors) implements McaEntryInterface {
+            public function __construct(protected int $sectors)
+            {
+            }
+
+            public function getData(): Generator
+            {
+                yield "";
+            }
+
+            public function getSerializedData(): Generator
+            {
+                yield str_repeat("x", $this->sectors * 4096);
+            }
+
+            public function getAllData(): string
+            {
+                return "";
+            }
+
+            public function getModifiedTime(): int
+            {
+                return 0;
+            }
+
+            public function getRegionIndex(): int
+            {
+                return 0;
+            }
+
+            public function getXPos(): int
+            {
+                return 0;
+            }
+
+            public function getZPos(): int
+            {
+                return 0;
+            }
+        };
+    }
+
+    public function testEntrySpanningMaxSectorsIsAccepted(): void
+    {
+        $writer = new McaWriter(new TempMemoryFile());
+        $writer->writeEntry($this->makeSizedEntry(0xFF));
+        $writer->finalize();
+
+        $this->assertTrue(true); // no exception: 255 sectors fit into the 1-byte sector count
+    }
+
+    public function testEntryExceedingMaxSectorsIsRejected(): void
+    {
+        $writer = new McaWriter(new TempMemoryFile());
+
+        $this->expectException(McaFileException::class);
+        $this->expectExceptionMessageMatches("/can only store 255/");
+        $writer->writeEntry($this->makeSizedEntry(0xFF + 1));
     }
 }

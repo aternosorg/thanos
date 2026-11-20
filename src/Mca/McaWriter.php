@@ -15,6 +15,15 @@ use InvalidArgumentException;
 
 class McaWriter
 {
+    /**
+     * The Anvil location table stores the sector offset in 3 bytes and the sector count in 1 byte,
+     * so a single chunk may span at most 255 sectors (0xFF * 4096 bytes) and the file may hold at
+     * most 0xFFFFFF sectors. Exceeding either limit used to be masked away by the header packing,
+     * producing a region file whose entries point at the wrong data.
+     */
+    protected const int MAX_SECTORS_PER_ENTRY = 0xFF;
+    protected const int MAX_SECTOR_OFFSET = 0xFFFFFF;
+
     protected int $dataOffset = 8192;
     protected array $offsets;
     protected array $sizes;
@@ -104,6 +113,24 @@ class McaWriter
                 throw new McaFileException("Could not write padding to output file " . $this->getFilename(), previous: $e);
             }
             $written += $paddingLength;
+        }
+
+        $sizeSectors = intdiv($written, 4096);
+        if ($sizeSectors > self::MAX_SECTORS_PER_ENTRY) {
+            throw new McaFileException(sprintf(
+                "Entry at index %d of %s needs %d sectors, but the location table can only store %d",
+                $index,
+                $this->getFilename(),
+                $sizeSectors,
+                self::MAX_SECTORS_PER_ENTRY
+            ));
+        }
+        if (intdiv($this->dataOffset, 4096) > self::MAX_SECTOR_OFFSET) {
+            throw new McaFileException(sprintf(
+                "Region file %s would exceed the maximum addressable size (%d sectors)",
+                $this->getFilename(),
+                self::MAX_SECTOR_OFFSET
+            ));
         }
 
         $this->dataOffset += $written;
