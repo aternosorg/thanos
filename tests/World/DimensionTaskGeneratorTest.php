@@ -152,6 +152,27 @@ class DimensionTaskGeneratorTest extends ThanosTestCase
         }
     }
 
+    public function testSessionLockIsNotCopied(): void
+    {
+        $world = sys_get_temp_dir() . "/thanos-session-lock-" . bin2hex(random_bytes(6));
+        mkdir($world . "/region", 0777, true);
+        file_put_contents($world . "/level.dat", "level");
+        file_put_contents($world . "/session.lock", "lock");
+
+        $tasks = iterator_to_array((new DimensionTaskGenerator([]))->generateTasks(
+            new Directory($world),
+            new TempDirectory()
+        ));
+        $sources = [];
+        foreach ($tasks as $task) {
+            array_push($sources, ...$this->getSourcePaths($task, $world));
+        }
+        new Directory($world)->delete();
+
+        $this->assertContains("level.dat", $sources, "regular misc files must still be copied");
+        $this->assertNotContains("session.lock", $sources, "session.lock must never be copied into the output world");
+    }
+
     public function testGenerateCopyTasksSkipLinks(): void
     {
         $generator = new DimensionTaskGenerator([]);
