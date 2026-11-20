@@ -20,6 +20,13 @@ use Generator;
 class DimensionTaskGenerator
 {
     /**
+     * Files that must never be copied into the output world: `session.lock` is a runtime lock
+     * created by the server for the world it currently has open. Carrying it into a backup (or
+     * into a restored world) is at best useless and can make tools believe the world is in use.
+     */
+    protected const SKIPPED_FILES = ["session.lock"];
+
+    /**
      * @param (ChunkPatternInterface|DimensionPatternFactoryInterface)[] $patterns
      */
     public function __construct(
@@ -59,6 +66,9 @@ class DimensionTaskGenerator
             }
 
             if ($child instanceof FileInterface) {
+                if (in_array($child->getName(), self::SKIPPED_FILES, true)) {
+                    continue;
+                }
                 yield new CopyFileTask(new PathPair(
                     $child->getPath(),
                     $this->getChildFile($target, $child->getName())->getPath()
@@ -140,7 +150,8 @@ class DimensionTaskGenerator
     {
         /** @var GetPathInterface $child */
         foreach ($this->getChildrenOfType($source, GetPathInterface::class) as $child) {
-            if (in_array($child->getName(), $excludedFiles, true)) {
+            if (in_array($child->getName(), $excludedFiles, true)
+                || in_array($child->getName(), self::SKIPPED_FILES, true)) {
                 continue;
             }
             if ($child instanceof FileInterface) {
